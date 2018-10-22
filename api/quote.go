@@ -9,11 +9,14 @@ import (
 	"quote/utils"
 )
 
+type Result struct {
+	Data []Coin `json:"data"`
+}
+
 func GetApiQuotes(context echo.Context) error {
 	db := utils.DbBegin()
 	defer db.DbRollback()
 	var coins []Coin
-
 	var symbols, currencies, sources []string
 	if context.QueryParam("symbols") != "" {
 		symbols = strings.Split(context.QueryParam("symbols"), ",")
@@ -39,8 +42,7 @@ func GetApiQuotes(context echo.Context) error {
 		}
 		conditions.Find(&coins[i].Quotes)
 	}
-
 	response := utils.ArrayResponse
-	response.Body = coins
+	response.Body = &Result{Data: coins}
 	return context.JSON(http.StatusOK, response)
 }
