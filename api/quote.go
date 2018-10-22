@@ -26,7 +26,7 @@ func GetApiQuotes(context echo.Context) error {
 			sources = append(sources, "Quotes::"+strings.Title(source))
 		}
 	}
-	if db.Debug().Where("symbol in (?)", symbols).Find(&coins).RecordNotFound() {
+	if db.Where("symbol in (?)", symbols).Find(&coins).RecordNotFound() {
 		return utils.BuildError("1020")
 	}
 	for i, coin := range coins {
