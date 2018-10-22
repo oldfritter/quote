@@ -19,6 +19,6 @@ type Quote struct {
 }
 
 func (quote *Quote) AfterFind() {
-	quote.Source = strings.Split(quote.Type, "Quotes::")[0]
+	quote.Source = strings.Split(quote.Type, "Quotes::")[1]
 	quote.Currency = quote.CurrencyName
 }
