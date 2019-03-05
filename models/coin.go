@@ -15,7 +15,7 @@ type Coin struct {
 	Github           string `json:"-"`
 	LogoUrl          string `json:"logo_url"`
 	Platform         bool   `json:"platform"`
-	RfinexKey        string `json:"rfine_key"`
+	RfinexKey        string `json:"rfinex_key"`
 
 	Quotes []Quote `json:"quotes"`
 }
