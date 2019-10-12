@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"quote/routes"
-	"quote/utils"
 	"strconv"
 	"time"
 
 	newrelic "github.com/dafiti/echo-middleware"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/oldfritter/quote/routes"
+	"github.com/oldfritter/quote/utils"
 )
 
 func main() {

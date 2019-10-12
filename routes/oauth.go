@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/labstack/echo"
-	. "quote/api"
+	. "github.com/oldfritter/quote/api"
 )
 
 func SetQuoteInterfaces(e *echo.Echo) {

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	. "quote/models"
-	"quote/utils"
+	. "github.com/oldfritter/quote/models"
+	"github.com/oldfritter/quote/utils"
 )
 
 type Result struct {
