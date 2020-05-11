@@ -1,0 +1,8 @@
+---
+- name: KLineBuildWorker
+  exchange: quote.default
+  routing_key: quote.kLine.build
+  queue: quote.kLine.build
+  log: logs/k.log
+  durable: true
+  threads: 2

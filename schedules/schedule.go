@@ -12,6 +12,7 @@ import (
 
 	envConfig "quote/config"
 	"quote/initializers"
+	"quote/models"
 	"quote/schedules/backup/tasks"
 	"quote/schedules/sourceData"
 	"quote/sourceData/binance"
@@ -41,6 +42,7 @@ func initialize() {
 	utils.InitAwsS3Config()
 	utils.InitRedisPools()
 	initializers.InitializeAmqpConfig()
+	models.AutoMigrations()
 	initializers.LoadCacheData()
 	InitSchedule()
 
