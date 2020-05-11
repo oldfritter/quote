@@ -26,7 +26,6 @@ type Currency struct {
 }
 
 func InitAllCurrencies(db *utils.GormDB) {
-	// InitCurrenciesFromRfinex()
 	db.Where("visible = ?", true).Find(&AllCurrencies)
 }
 func (currency *Currency) IsEthereum() (result bool) {

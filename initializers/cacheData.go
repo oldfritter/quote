@@ -3,6 +3,7 @@ package initializers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"reflect"
 
 	. "quote/models"

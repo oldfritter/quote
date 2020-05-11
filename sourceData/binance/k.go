@@ -9,8 +9,10 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/shopspring/decimal"
+
 	"quote/models"
 	"quote/sourceData/redis"
+	sourceDataUtils "quote/sourceData/utils"
 )
 
 type BinancePayload struct {
@@ -27,27 +29,21 @@ type BinancePayload struct {
 		} `json:"k"`
 	} `json:"data"`
 }
+type Stream struct {
+	Method string   `json:"method"`
+	Params []string `json:"params"`
+	Id     int64    `json:"id"`
+}
 
-func GetBinancePrice() error {
+var binanceMarkets []models.Market
 
+func GetBinancePrice(stream Stream) (err error) {
 	u := url.URL{Scheme: "wss", Host: "stream.binance.com:9443", Path: "/stream"}
 	log.Println("connecting to ", u.String())
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Println("dial:", err)
 		return err
-	}
-	stream := struct {
-		Method string   `json:"method"`
-		Params []string `json:"params"`
-		Id     int64    `json:"id"`
-	}{
-		Method: "SUBSCRIBE",
-		Id:     704483774,
-	}
-	binanceMarkets := models.FindMarketsBySource("binance")
-	for _, m := range binanceMarkets {
-		stream.Params = append(stream.Params, m.Symbol+"@kline_1m")
 	}
 	b, err := json.Marshal(stream)
 	if err != nil {
@@ -59,12 +55,13 @@ func GetBinancePrice() error {
 		return err
 	}
 	defer c.Close()
-
-	done := make(chan struct{})
 	errChan := make(chan error)
+	reloadChan := make(chan error)
+	go func(chan error) {
+		sourceDataUtils.ListenReloadMarkets(reloadChan)
+	}(reloadChan)
 
 	go func() {
-		defer close(done)
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
@@ -88,17 +85,39 @@ func GetBinancePrice() error {
 					redis.Save(&m, &kLine)
 				}
 			}
-
 		}
 	}()
-
 	for {
 		select {
-		case <-done:
-			return nil
 		case <-errChan:
 			return fmt.Errorf("connect is closed!")
+		case <-reloadChan:
+			return fmt.Errorf("connect need reopen!")
 		}
 	}
+}
+
+func GetBinancePrices() error {
+	stream := Stream{
+		Method: "SUBSCRIBE",
+		Id:     704483774,
+	}
+	binanceMarkets = models.FindMarketsBySource("binance")
+	i := 0
+	for _, m := range binanceMarkets {
+		if i == 200 {
+			go func(stream Stream) {
+				GetBinancePrice(stream)
+			}(stream)
+			i = 0
+			stream.Params = nil
+		} else {
+			i += 1
+		}
+		stream.Params = append(stream.Params, m.Symbol+"@kline_1m")
+	}
+	go func(stream Stream) {
+		GetBinancePrice(stream)
+	}(stream)
 	return nil
 }

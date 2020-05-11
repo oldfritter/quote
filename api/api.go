@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"time"
 
-	newrelic "github.com/dafiti/echo-middleware"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	newrelic "github.com/oldfritter/echo-middleware"
 )
 
 func main() {
@@ -64,9 +64,10 @@ func customHTTPErrorHandler(err error, context echo.Context) {
 
 func initialize() {
 	utils.InitDB()
+	setLog()
 
 	// 记录 pid
-	err := ioutil.WriteFile("pids/quote.pid", []byte(strconv.Itoa(os.Getpid())), 0644)
+	err := ioutil.WriteFile("pids/api.pid", []byte(strconv.Itoa(os.Getpid())), 0644)
 	if err != nil {
 		log.Println(err)
 	}
@@ -74,4 +75,18 @@ func initialize() {
 
 func closeResource() {
 	utils.CloseDB()
+}
+
+func setLog() {
+	err := os.Mkdir("logs", 0755)
+	if err != nil {
+		if !os.IsExist(err) {
+			log.Fatalf("create folder error: %v", err)
+		}
+	}
+	file, err := os.OpenFile("logs/api.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatalf("open file error: %v", err)
+	}
+	log.SetOutput(file)
 }
