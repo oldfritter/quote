@@ -30,4 +30,8 @@ func AutoMigrations() {
 	// market
 	mainDB.AutoMigrate(&Market{})
 	mainDB.Model(&Market{}).AddUniqueIndex("index_markets_on_name", "name", "source")
+
+	// quote
+	mainDB.AutoMigrate(&Quote{})
+	mainDB.Model(&Quote{}).AddUniqueIndex("index_quotes_on_market_id_and_currency_id", "market_id", "currency_id")
 }

@@ -17,6 +17,8 @@ type HuobiResponse struct {
 	Data []struct {
 		Symbol string `json:"symbol"`
 		Status bool   `json:"visit-enabled"`
+		Base   string `json:"base-currency"`
+		Quote  string `json:"quote-currency"`
 	} `json:"data"`
 }
 
@@ -44,19 +46,29 @@ func GetMarkets() {
 		log.Println(err)
 		return
 	}
-	db := utils.DbBegin()
-	defer db.DbRollback()
+	mdb := utils.DbBegin()
+	defer mdb.DbRollback()
 	var markets []Market
-	db.Model(Market{}).Where("source = ?", "huobi").Updates(Market{Visible: false})
+	mdb.Model(Market{}).Where("source = ?", "huobi").Updates(Market{Visible: false})
+	mdb.DbRollback()
 	for _, symbol := range huobiResponse.Data {
+		db := utils.DbBegin()
+		defer db.DbRollback()
 		if symbol.Status {
 			db.Where("source = ?", "huobi").Find(&markets)
 			var market Market
-			db.FirstOrInit(&market, map[string]interface{}{"symbol": symbol.Symbol, "name": strings.ToUpper(symbol.Symbol), "source": "huobi"})
+			db.FirstOrInit(&market, map[string]interface{}{"name": strings.ToUpper(symbol.Symbol), "symbol": symbol.Symbol, "source": "huobi"})
+			var base, quote Currency
+			db.FirstOrInit(&base, map[string]interface{}{"symbol": symbol.Base, "key": strings.ToUpper(symbol.Base), "visible": true, "source": "huobi"})
+			db.FirstOrInit(&quote, map[string]interface{}{"symbol": symbol.Quote, "key": strings.ToUpper(symbol.Quote), "visible": true, "source": "huobi"})
+			db.Save(&base)
+			db.Save(&quote)
+			market.BaseId = base.Id
+			market.QuoteId = quote.Id
 			market.Visible = true
 			db.Save(&market)
 		}
+		db.DbCommit()
 	}
-	db.DbCommit()
 	return
 }

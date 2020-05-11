@@ -43,8 +43,8 @@ func initialize() {
 	utils.InitDB()
 	utils.InitRedisPools()
 	initializers.InitializeAmqpConfig()
-	initializers.LoadCacheData()
 	models.AutoMigrations()
+	initializers.LoadCacheData()
 
 	setLog()
 	err := os.MkdirAll("pids", 0755)

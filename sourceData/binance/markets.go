@@ -17,6 +17,8 @@ type BinanceResponse struct {
 	Symbols []struct {
 		Symbol string `json:"symbol"`
 		Status string `json:"status"`
+		Base   string `json:"baseAsset"`
+		Quote  string `json:"quoteAsset"`
 	} `json:"symbols"`
 }
 
@@ -44,19 +46,29 @@ func GetMarkets() {
 		log.Println(err)
 		return
 	}
-	db := utils.DbBegin()
-	defer db.DbRollback()
+	mdb := utils.DbBegin()
+	defer mdb.DbRollback()
 	var markets []Market
-	db.Model(Market{}).Where("source = ?", "binance").Updates(Market{Visible: false})
+	mdb.Model(Market{}).Where("source = ?", "binance").Updates(Market{Visible: false})
+	mdb.DbRollback()
 	for _, symbol := range binanceResponse.Symbols {
+		db := utils.DbBegin()
+		defer db.DbRollback()
 		if symbol.Status == "TRADING" {
 			db.Where("source = ?", "binance").Find(&markets)
 			var market Market
 			db.FirstOrInit(&market, map[string]interface{}{"name": symbol.Symbol, "symbol": strings.ToLower(symbol.Symbol), "source": "binance"})
+			var base, quote Currency
+			db.FirstOrInit(&base, map[string]interface{}{"symbol": strings.ToLower(symbol.Base), "key": symbol.Base, "visible": true, "source": "binance"})
+			db.FirstOrInit(&quote, map[string]interface{}{"symbol": strings.ToLower(symbol.Quote), "key": symbol.Quote, "visible": true, "source": "binance"})
+			db.Save(&base)
+			db.Save(&quote)
+			market.BaseId = base.Id
+			market.QuoteId = quote.Id
 			market.Visible = true
 			db.Save(&market)
 		}
+		db.DbCommit()
 	}
-	db.DbCommit()
 	return
 }

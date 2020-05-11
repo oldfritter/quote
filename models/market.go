@@ -14,6 +14,8 @@ type Market struct {
 	Symbol  string       `json:"symbol" gorm:"type:varchar(16)"`  // 源市场的唯一标示
 	Visible bool         `json:"visible"`                         // 是否可用
 	Ticker  TickerAspect `json:"-" sql:"-"`                       // 最新行情
+	BaseId  int          `json:"base_id"`                         // 商品币种
+	QuoteId int          `json:"quote_id"`                        // 计价币种
 }
 
 func InitAllMarkets(db *utils.GormDB) {
