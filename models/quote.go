@@ -10,6 +10,7 @@ type Quote struct {
 	CommonModel
 	Type         string          `json:"-"`
 	CoinId       int             `json:"-"`
+	MarketId     int             `json:"-"`
 	Timestamp    int64           `json:"timestamp"`
 	CurrencyName string          `json:"-"`
 	Price        decimal.Decimal `json:"price"`

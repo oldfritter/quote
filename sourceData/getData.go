@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -27,9 +26,9 @@ func main() {
 	}()
 
 	go func() {
-		err := binance.GetBinancePrice()
+		err := binance.GetBinancePrices()
 		for err != nil {
-			err = binance.GetBinancePrice()
+			err = binance.GetBinancePrices()
 		}
 	}()
 

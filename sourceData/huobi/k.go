@@ -10,8 +10,10 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/shopspring/decimal"
+
 	"quote/models"
 	"quote/sourceData/redis"
+	sourceDataUtils "quote/sourceData/utils"
 	"quote/utils"
 )
 
@@ -48,12 +50,12 @@ func GetHuobiPrice() error {
 		}
 	}
 	defer c.Close()
-
-	done := make(chan struct{})
 	errChan := make(chan error)
-
+	reloadChan := make(chan error)
+	go func(chan error) {
+		sourceDataUtils.ListenReloadMarkets(reloadChan)
+	}(reloadChan)
 	go func() {
-		defer close(done)
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
@@ -89,10 +91,10 @@ func GetHuobiPrice() error {
 
 	for {
 		select {
-		case <-done:
-			return nil
 		case <-errChan:
 			return fmt.Errorf("connect is closed!")
+		case <-reloadChan:
+			return fmt.Errorf("connect need reopen!")
 		case t := <-ticker.C:
 			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
 			if err != nil {
