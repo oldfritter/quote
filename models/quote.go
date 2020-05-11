@@ -10,6 +10,7 @@ type Quote struct {
 	CommonModel
 	Type       string          `json:"-"`
 	CurrencyId int             `json:"-"`
+	QuoteId    int             `json:"-"`
 	MarketId   int             `json:"-"`
 	Timestamp  int64           `json:"timestamp"`
 	Price      decimal.Decimal `json:"price" gorm:"type:decimal(32,16);default:0;"`

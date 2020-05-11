@@ -3,6 +3,7 @@ package redis
 import (
 	"encoding/json"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -35,6 +36,21 @@ func Save(market *Market, k *KLine) {
 	}
 	dataRedis.Send("zremrangebyscore", (*market).KLine(1), timestamp, timestamp)
 	dataRedis.Do("zadd", (*market).KLine(1), timestamp, b)
+
+	db := utils.DbBegin()
+	defer db.DbRollback()
+	var quote Quote
+	db.FirstOrInit(&quote, map[string]interface{}{
+		"market_id":   (*market).Id,
+		"type":        "Quotes::" + strings.Title((*market).Source),
+		"source":      (*market).Source,
+		"currency_id": (*market).BaseId,
+		"quote_id":    (*market).QuoteId,
+	})
+	quote.Timestamp = (*k).Timestamp
+	quote.Price = (*k).Close
+	db.Save(&quote)
+	db.DbCommit()
 	buildOtherKLines(dataRedis, market)
 
 	n, err := json.Marshal(NotifyKLine{
