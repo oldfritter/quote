@@ -1,2 +1,2 @@
-nohup ./quote >> logs/quote.log &
-
+nohup ./cmd/api >> logs/api.log &
+nohup ./cmd/getData >> logs/getData.log &
