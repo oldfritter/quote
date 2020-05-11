@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/jinzhu/gorm"
@@ -38,12 +39,12 @@ func (currency *Currency) IsEthereum() (result bool) {
 func InitCurrenciesFromRfinex() {
 	resp, err := http.Get("https://rfinex.vip/api/v4/currencies")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	var respo struct {

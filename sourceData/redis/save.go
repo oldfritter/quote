@@ -2,7 +2,7 @@ package redis
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -17,7 +17,7 @@ func Save(market *Market, k *KLine) {
 	dataRedis := utils.GetRedisConn("data")
 	defer dataRedis.Close()
 
-	fmt.Println((*market).Source, (*market).Symbol, (*k).Timestamp, (*k).Close)
+	log.Println((*market).Source, (*market).Symbol, (*k).Timestamp, (*k).Close)
 	dataRedis.Send("zremrangebyscore", (*market).TimeLine(), (*k).Timestamp, (*k).Timestamp)
 	dataRedis.Do("zadd", (*market).TimeLine(), (*k).Timestamp, (*k).Close)
 
@@ -31,7 +31,7 @@ func Save(market *Market, k *KLine) {
 		Vol:       (*k).Vol,
 	})
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 	}
 	dataRedis.Send("zremrangebyscore", (*market).KLine(1), timestamp, timestamp)
 	dataRedis.Do("zadd", (*market).KLine(1), timestamp, b)
@@ -50,23 +50,23 @@ func Save(market *Market, k *KLine) {
 		Period:   1,
 	})
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 	}
 	go func() {
 		err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["k"], "#", "text/plain", &n, amqp.Table{}, amqp.Persistent)
 		if err != nil {
-			fmt.Println("{error:", err, "}")
+			log.Println("{error:", err, "}")
 		}
 	}()
 	ticker := refreshTicker(dataRedis, market)
 	t, err := json.Marshal(ticker)
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 	}
 	go func() {
 		err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["ticker"], "#", "text/plain", &t, amqp.Table{}, amqp.Persistent)
 		if err != nil {
-			fmt.Println("{error:", err, "}")
+			log.Println("{error:", err, "}")
 		}
 	}()
 }
@@ -88,11 +88,11 @@ func buildOtherKLines(dataRedis redis.Conn, market *Market) {
 		}{MarketId: (*market).Id, Period: period}
 		b, err := json.Marshal(payload)
 		if err != nil {
-			fmt.Println("error:", err)
+			log.Println("error:", err)
 		}
 		err = initializers.PublishMessageWithRouteKey("quote.default", "quote.kLine.build", "text/plain", &b, amqp.Table{}, amqp.Persistent)
 		if err != nil {
-			fmt.Println("{error:", err, "}")
+			log.Println("{error:", err, "}")
 		}
 	}
 }

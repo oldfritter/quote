@@ -3,15 +3,16 @@ package huobi
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/shopspring/decimal"
 	"quote/models"
 	"quote/sourceData/redis"
 	"quote/utils"
-	"github.com/shopspring/decimal"
 )
 
 type HuobiPayload struct {
@@ -31,18 +32,18 @@ type HuobiPayload struct {
 
 func GetHuobiPrice() error {
 	u := url.URL{Scheme: "wss", Host: "api.huobi.pro", Path: "/ws"}
-	fmt.Println("connecting to ", u.String())
+	log.Println("connecting to ", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		fmt.Println("dial:", err)
+		log.Println("dial:", err)
 		return err
 	}
 	huobiMarkets := models.FindMarketsBySource("huobi")
 	for _, m := range huobiMarkets {
 		err = c.WriteMessage(websocket.TextMessage, []byte("{\"sub\":\"market."+m.Symbol+".kline.1min\",\"id\":\"gorilla\"}"))
 		if err != nil {
-			fmt.Println("write:", err)
+			log.Println("write:", err)
 			return err
 		}
 	}
@@ -56,7 +57,7 @@ func GetHuobiPrice() error {
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
-				fmt.Println("read:", err)
+				log.Println("read:", err)
 				errChan <- err
 				return
 			}
@@ -95,7 +96,7 @@ func GetHuobiPrice() error {
 		case t := <-ticker.C:
 			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
 			if err != nil {
-				fmt.Println("write:", err)
+				log.Println("write:", err)
 				return err
 			}
 		}

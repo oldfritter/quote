@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"fmt"
-	"github.com/gomodule/redigo/redis"
+	"log"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 var (
@@ -50,14 +51,14 @@ func newRedisPool(redisName string) *redis.Pool {
 		Dial: func() (redis.Conn, error) {
 			conn, err := redis.Dial(network, server)
 			if err != nil {
-				fmt.Println("redis can't dial:" + err.Error())
+				log.Println("redis can't dial:" + err.Error())
 				return nil, err
 			}
 
 			if password != "" {
 				_, err := conn.Do("AUTH", password)
 				if err != nil {
-					fmt.Println("redis can't AUTH:" + err.Error())
+					log.Println("redis can't AUTH:" + err.Error())
 					conn.Close()
 					return nil, err
 				}
@@ -66,7 +67,7 @@ func newRedisPool(redisName string) *redis.Pool {
 			if db != "" {
 				_, err := conn.Do("SELECT", db)
 				if err != nil {
-					fmt.Println("redis can't SELECT:" + err.Error())
+					log.Println("redis can't SELECT:" + err.Error())
 					conn.Close()
 					return nil, err
 				}
@@ -76,7 +77,7 @@ func newRedisPool(redisName string) *redis.Pool {
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 			_, err := c.Do("PING")
 			if err != nil {
-				fmt.Println("redis can't ping, err:" + err.Error())
+				log.Println("redis can't ping, err:" + err.Error())
 			}
 			return err
 		},

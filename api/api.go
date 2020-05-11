@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -68,7 +68,7 @@ func initialize() {
 	// 记录 pid
 	err := ioutil.WriteFile("pids/quote.pid", []byte(strconv.Itoa(os.Getpid())), 0644)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 }
 
