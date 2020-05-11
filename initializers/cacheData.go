@@ -43,7 +43,7 @@ func LoadCacheData() {
 			if err == nil {
 				reflect.ValueOf(&payload).MethodByName(payload.Update).Call([]reflect.Value{})
 			} else {
-				fmt.Println(fmt.Sprintf("{error: %v}", err))
+				log.Println(fmt.Sprintf("{error: %v}", err))
 			}
 		}
 		return

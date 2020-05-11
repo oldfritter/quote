@@ -2,7 +2,6 @@ package sneakerWorkers
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -13,17 +12,14 @@ import (
 	"quote/utils"
 )
 
-func (worker *Worker) KLineBuildWorker(payloadJson *[]byte) (err error) {
-	fmt.Println("--KLineBuild payload: ", string(*payloadJson))
-	worker.LogInfo("--KLineBuild payload: ", string(*payloadJson))
-	// start := time.Now().UnixNano()
+func (worker Worker) KLineBuildWorker(payloadJson *[]byte) (err error) {
+	worker.LogInfo(string(*payloadJson))
 	var payload struct {
 		MarketId int   `json:"market_id"`
 		Period   int64 `json:"period"`
 	}
 	json.Unmarshal([]byte(*payloadJson), &payload)
-	buildKLine(worker, payload.MarketId, payload.Period)
-	worker.LogInfo("--KLineBuild payload: ", payload)
+	buildKLine(&worker, payload.MarketId, payload.Period)
 	return
 }
 

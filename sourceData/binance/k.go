@@ -3,13 +3,14 @@ package binance
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 
 	"github.com/gorilla/websocket"
+	"github.com/shopspring/decimal"
 	"quote/models"
 	"quote/sourceData/redis"
-	"github.com/shopspring/decimal"
 )
 
 type BinancePayload struct {
@@ -30,10 +31,10 @@ type BinancePayload struct {
 func GetBinancePrice() error {
 
 	u := url.URL{Scheme: "wss", Host: "stream.binance.com:9443", Path: "/stream"}
-	fmt.Println("connecting to ", u.String())
+	log.Println("connecting to ", u.String())
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		fmt.Println("dial:", err)
+		log.Println("dial:", err)
 		return err
 	}
 	stream := struct {
@@ -50,11 +51,11 @@ func GetBinancePrice() error {
 	}
 	b, err := json.Marshal(stream)
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 	}
 	err = c.WriteMessage(websocket.TextMessage, b)
 	if err != nil {
-		fmt.Println("write:", err)
+		log.Println("write:", err)
 		return err
 	}
 	defer c.Close()
@@ -67,7 +68,7 @@ func GetBinancePrice() error {
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
-				fmt.Println("read:", err)
+				log.Println("read:", err)
 				errChan <- err
 				return
 			}
