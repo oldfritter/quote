@@ -1,4 +1,4 @@
-package binance
+package huobi
 
 import (
 	"context"
@@ -13,17 +13,17 @@ import (
 	"quote/utils"
 )
 
-type BinanceResponse struct {
-	Symbols []struct {
+type HuobiResponse struct {
+	Data []struct {
 		Symbol string `json:"symbol"`
-		Status string `json:"status"`
-	} `json:"symbols"`
+		Status bool   `json:"visit-enabled"`
+	} `json:"data"`
 }
 
 func GetMarkets() {
 	ctx, cancelFun := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancelFun()
-	req, err := http.NewRequest(http.MethodGet, "https://api.binance.com/api/v1/exchangeInfo", nil)
+	req, err := http.NewRequest(http.MethodGet, "https://api.huobi.com/v1/settings/symbols?r=o58hsjzm4m", nil)
 	if err != nil {
 		log.Println(err)
 		return
@@ -38,8 +38,8 @@ func GetMarkets() {
 		log.Println(err)
 		return
 	}
-	var binanceResponse BinanceResponse
-	err = json.Unmarshal(body, &binanceResponse)
+	var huobiResponse HuobiResponse
+	err = json.Unmarshal(body, &huobiResponse)
 	if err != nil {
 		log.Println(err)
 		return
@@ -47,12 +47,12 @@ func GetMarkets() {
 	db := utils.DbBegin()
 	defer db.DbRollback()
 	var markets []Market
-	db.Model(Market{}).Where("source = ?", "binance").Updates(Market{Visible: false})
-	for _, symbol := range binanceResponse.Symbols {
-		if symbol.Status == "TRADING" {
-			db.Where("source = ?", "binance").Find(&markets)
+	db.Model(Market{}).Where("source = ?", "huobi").Updates(Market{Visible: false})
+	for _, symbol := range huobiResponse.Data {
+		if symbol.Status {
+			db.Where("source = ?", "huobi").Find(&markets)
 			var market Market
-			db.FirstOrInit(&market, map[string]interface{}{"name": symbol.Symbol, "symbol": strings.ToLower(symbol.Symbol), "source": "binance"})
+			db.FirstOrInit(&market, map[string]interface{}{"symbol": symbol.Symbol, "name": strings.ToUpper(symbol.Symbol), "source": "huobi"})
 			market.Visible = true
 			db.Save(&market)
 		}

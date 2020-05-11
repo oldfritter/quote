@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/signal"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"quote/schedules/backup/tasks"
 	"quote/schedules/sourceData"
 	"quote/sourceData/binance"
+	"quote/sourceData/huobi"
 	"quote/utils"
 	"quote/workers/sneakerWorkers"
 )
@@ -63,7 +65,8 @@ func InitSchedule() {
 	c.AddFunc("0 59 23 * * *", sourceData.CleanMarketExpiredKLine)
 	c.AddFunc("0 59 23 * * *", sourceData.CleanMarketExpiredPrice)
 
-	c.AddFunc("0 0 * * * *", binance.GetBinanceMarkets)
+	c.AddFunc("0 0 * * * *", binance.GetMarkets)
+	c.AddFunc("0 0 * * * *", huobi.GetMarkets)
 
 	c.Start()
 }
