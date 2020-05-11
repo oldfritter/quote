@@ -5,4 +5,4 @@
   queue: quote.kLine.build
   log: logs/k.log
   durable: true
-  threads: 4
+  threads: 2

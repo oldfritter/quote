@@ -29,15 +29,15 @@ func UploadLogFileToS3() {
 func UploadLogFileToS3ByDay(day time.Time) {
 	utils.InitAwsS3Config()
 	for _, logName := range logNames {
-		gzFile := "/tmp/serbia/" + logName + day.Format("2006-01-02") + ".tar.gz"
+		gzFile := "/tmp/quote/" + logName + day.Format("2006-01-02") + ".tar.gz"
 
 		name, _ := exec.Command("sh", "-c", "hostname").Output()
 		hostname := string(name)
 
-		exec.Command("sh", "-c", "mkdir -p /tmp/serbia/").Output()
+		exec.Command("sh", "-c", "mkdir -p /tmp/quote/").Output()
 		exec.Command("sh", "-c", "tar -czvf "+gzFile+" "+"logs/"+logName+day.Format("2006-01-02")+".log").Output()
 
-		key := "logs/serbia/" + day.Format("01/02") + "/" + logName + "/" + hostname + ".tar.gz"
+		key := "logs/quote/" + day.Format("01/02") + "/" + logName + "/" + hostname + ".tar.gz"
 
 		err := utils.UploadFileToS3(utils.S3Config["S3_BACKUP_BUCKET"], key, gzFile)
 		if err != nil {
