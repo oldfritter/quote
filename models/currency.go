@@ -11,26 +11,11 @@ import (
 
 type Currency struct {
 	CommonModel
-	Key     string `json:"key"`     // 币的唯一标示
-	Symbol  string `json:"symbol"`  // 币的简称
-	Source  string `json:"source"`  // 币的来源，交易所
-	Visible bool   `json:"visible"` // 是否可用
-	// Erc20   bool   `json:"erc20"`   // 是否erc20
-	// Erc23   bool   `json:"erc23"`   // 是否而出3
-	// Logo    string `json:"logo"`    // 币的图标
-
-	//   Type             string `json:"-"`
-	//   WebsiteSlug      string `json:"website_slug"`
-	//   Website          string `json:"website"`
-	//   CoinmarketcapUrl string `json:"coinmarketcap_url"`
-	//   CoinmarketcapId  string `json:"coinmarketcap_id"`
-	//   ContactAddress   string `json:"contact_address"`
-	//   Twitter          string `json:"-"`
-	//   Facebook         string `json:"-"`
-	//   Github           string `json:"-"`
-	//   LogoUrl          string `json:"logo_url"`
-	//   Platform         bool   `json:"platform"`
-	//   RfinexKey        string `json:"rfinex_key"`
+	Key     string  `json:"key"`     // 币的唯一标示
+	Symbol  string  `json:"symbol"`  // 币的简称
+	Source  string  `json:"source"`  // 币的来源，交易所
+	Visible bool    `json:"visible"` // 是否可用
+	Quotes  []Quote `json:"quotes" sql:"-"`
 }
 
 func InitAllCurrencies(db *utils.GormDB) {

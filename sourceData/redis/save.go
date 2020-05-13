@@ -41,11 +41,11 @@ func Save(market *Market, k *KLine) {
 	defer db.DbRollback()
 	var quote Quote
 	db.FirstOrInit(&quote, map[string]interface{}{
-		"market_id":   (*market).Id,
-		"type":        "Quotes::" + strings.Title((*market).Source),
-		"source":      (*market).Source,
-		"currency_id": (*market).BaseId,
-		"quote_id":    (*market).QuoteId,
+		"market_id": (*market).Id,
+		"type":      "Quotes::" + strings.Title((*market).Source),
+		"source":    (*market).Source,
+		"base_id":   (*market).BaseId,
+		"quote_id":  (*market).QuoteId,
 	})
 	quote.Timestamp = (*k).Timestamp
 	quote.Price = (*k).Close
