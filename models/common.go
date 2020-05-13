@@ -33,5 +33,5 @@ func AutoMigrations() {
 
 	// quote
 	mainDB.AutoMigrate(&Quote{})
-	mainDB.Model(&Quote{}).AddUniqueIndex("index_quotes_on_market_id_and_currency_id", "market_id", "currency_id")
+	mainDB.Model(&Quote{}).AddUniqueIndex("index_quotes_on_base_id_market_id_and_and_quote_id", "base_id", "market_id", "quote_id")
 }

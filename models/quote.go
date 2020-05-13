@@ -14,15 +14,16 @@ const RedisNotify = "quote"
 
 type Quote struct {
 	CommonModel
-	Type      string          `json:"-"`
-	BaseId    int             `json:"-"`
-	QuoteId   int             `json:"-"`
-	MarketId  int             `json:"-"`
-	Timestamp int64           `json:"timestamp"`
-	Price     decimal.Decimal `json:"price" gorm:"type:decimal(32,16);default:0;"`
-	Source    string          `json:"source"`
-	Base      string          `sql:"-" json:"base"`
-	Quote     string          `sql:"-" json:"quote"`
+	Type          string          `json:"-"`
+	BaseId        int             `json:"-"`
+	QuoteId       int             `json:"-"`
+	MarketId      int             `json:"-"`
+	Timestamp     int64           `json:"timestamp"`
+	Price         decimal.Decimal `json:"price" gorm:"type:decimal(32,16);default:0;"`
+	Source        string          `json:"source"`
+	Base          string          `sql:"-" json:"base"`
+	Quote         string          `sql:"-" json:"quote"`
+	QuoteCurrency Currency        `sql:"-"`
 }
 
 func (quote *Quote) AfterFind() {
@@ -32,6 +33,7 @@ func (quote *Quote) AfterFind() {
 			quote.Base = currency.Symbol
 		}
 		if currency.Id == quote.QuoteId {
+			quote.QuoteCurrency = currency
 			quote.Quote = currency.Symbol
 		}
 	}

@@ -52,6 +52,7 @@ func Save(market *Market, k *KLine) {
 	db.Save(&quote)
 	db.DbCommit()
 	buildOtherKLines(dataRedis, market)
+	createSubQuote(&quote)
 
 	n, err := json.Marshal(NotifyKLine{
 		KLine: KLine{
@@ -133,4 +134,18 @@ func refreshTicker(dataRedis redis.Conn, market *Market) (ticker Ticker) {
 		ticker.TickerAspect.Vol = ticker.TickerAspect.Vol.Add(k.Vol)
 	}
 	return
+}
+
+func createSubQuote(quote *Quote) {
+	if quote.QuoteCurrency.Source == "local" {
+		return
+	}
+	b, err := json.Marshal(map[string]int{"id": quote.Id})
+	if err != nil {
+		log.Println(err)
+	}
+	err = initializers.PublishMessageWithRouteKey("quote.default", "quote.build", "text/plain", &b, amqp.Table{}, amqp.Persistent)
+	if err != nil {
+		log.Println(err)
+	}
 }
