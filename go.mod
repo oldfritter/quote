@@ -14,6 +14,7 @@ require (
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/newrelic/go-agent v3.4.0+incompatible // indirect
+	github.com/oldfritter/echo-middleware v0.0.0-20191231015931-95c31010b17d // indirect
 	github.com/oldfritter/sneaker-go v1.0.7
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect

@@ -9,13 +9,13 @@ import (
 
 type Market struct {
 	CommonModel
+	BaseId  int          `json:"base_id"`                         // 商品币种
+	QuoteId int          `json:"quote_id"`                        // 计价币种
 	Name    string       `json:"name" gorm:"type:varchar(64)"`    // 市场名称
 	Source  string       `json:"source" gorm:"type:varchar(16);"` // 源，huobi或者binance
 	Symbol  string       `json:"symbol" gorm:"type:varchar(16)"`  // 源市场的唯一标示
 	Visible bool         `json:"visible"`                         // 是否可用
 	Ticker  TickerAspect `json:"-" sql:"-"`                       // 最新行情
-	BaseId  int          `json:"base_id"`                         // 商品币种
-	QuoteId int          `json:"quote_id"`                        // 计价币种
 }
 
 func InitAllMarkets(db *utils.GormDB) {

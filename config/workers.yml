@@ -6,3 +6,11 @@
   log: logs/k.log
   durable: true
   threads: 2
+
+- name: QuoteBuildWorker
+  exchange: quote.default
+  routing_key: quote.build
+  queue: quote.build
+  log: logs/quote.log
+  durable: true
+  threads: 2

@@ -43,7 +43,7 @@ func GetHuobiPrice() error {
 	}
 	huobiMarkets := models.FindMarketsBySource("huobi")
 	for _, m := range huobiMarkets {
-		err = c.WriteMessage(websocket.TextMessage, []byte("{\"sub\":\"market."+m.Symbol+".kline.1min\",\"id\":\"gorilla\"}"))
+		err = c.WriteMessage(websocket.TextMessage, []byte("{\"sub\":\"market."+m.Symbol+".kline.1min\",\"id\":\"oldfritter\"}"))
 		if err != nil {
 			log.Println("write:", err)
 			return err
@@ -86,7 +86,7 @@ func GetHuobiPrice() error {
 		}
 	}()
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 
 	for {
