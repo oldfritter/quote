@@ -14,6 +14,7 @@ import (
 	"quote/initializers"
 	"quote/models"
 	"quote/schedules/backup/tasks"
+	"quote/schedules/baseRate"
 	"quote/schedules/sourceData"
 	"quote/sourceData/binance"
 	"quote/sourceData/huobi"
@@ -69,6 +70,10 @@ func InitSchedule() {
 
 	c.AddFunc("0 0 * * * *", binance.GetMarkets)
 	c.AddFunc("0 0 * * * *", huobi.GetMarkets)
+
+	c.AddFunc("* * * * * *", baseRate.CnyToUsd)
+	c.AddFunc("* * * * * *", baseRate.UsdToCny)
+	c.AddFunc("0 * * * * *", baseRate.UsdtToUsd)
 
 	c.Start()
 }

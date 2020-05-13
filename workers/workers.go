@@ -10,7 +10,9 @@ import (
 	sneaker "github.com/oldfritter/sneaker-go"
 	"github.com/streadway/amqp"
 
+	envConfig "quote/config"
 	"quote/initializers"
+	"quote/utils"
 	"quote/workers/sneakerWorkers"
 )
 
@@ -27,6 +29,8 @@ func main() {
 }
 
 func initialize() {
+	envConfig.InitEnv()
+	utils.InitDB()
 	initializers.InitializeAmqpConfig()
 
 	setLog()
@@ -42,6 +46,7 @@ func initialize() {
 
 func closeResource() {
 	initializers.CloseAmqpConnection()
+	utils.CloseDB()
 }
 
 func StartAllWorkers() {

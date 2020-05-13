@@ -1,7 +1,6 @@
 package models
 
 import (
-	// "encoding/json"
 	"fmt"
 
 	"github.com/jinzhu/gorm"
@@ -43,5 +42,4 @@ func FindCurrencyBySymbol(symbol string) (Currency, error) {
 }
 
 func (c *Currency) AfterFind(db *gorm.DB) {
-	// json.Unmarshal([]byte(c.OptionsJson), &c.Options)
 }
