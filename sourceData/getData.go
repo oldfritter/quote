@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
 
 	envConfig "quote/config"
 	"quote/initializers"
@@ -35,6 +36,7 @@ func main() {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
+	time.Sleep(500)
 	closeResource()
 }
 
