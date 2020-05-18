@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 
@@ -19,6 +20,7 @@ func Quotes(w http.ResponseWriter, r *http.Request) {
 		log.Println("upgrade:", err)
 		return
 	}
+	c.SetWriteDeadline(time.Now().Add(time.Hour * 24))
 	defer c.Close()
 	var params struct {
 		Symbols    []string `json:"symbols"`
@@ -31,7 +33,8 @@ func Quotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	err = utils.ListenPubSubChannels(ctx,
+	err = utils.ListenPubSubChannels(
+		ctx,
 		func() error {
 			return nil
 		},
@@ -87,7 +90,8 @@ func Quotes(w http.ResponseWriter, r *http.Request) {
 			}
 			return nil
 		},
-		RedisNotify)
+		RedisNotify,
+	)
 	if err != nil {
 		log.Println(err)
 		return

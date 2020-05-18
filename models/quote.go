@@ -23,7 +23,7 @@ type Quote struct {
 	Source        string          `json:"source"`
 	Base          string          `sql:"-" json:"base"`
 	Quote         string          `sql:"-" json:"quote"`
-	QuoteCurrency Currency        `sql:"-"`
+	QuoteCurrency Currency        `sql:"-" json:"-"`
 }
 
 func (quote *Quote) AfterFind() {
