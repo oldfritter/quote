@@ -23,6 +23,7 @@ type Quote struct {
 	Source        string          `json:"source"`
 	Base          string          `sql:"-" json:"base"`
 	Quote         string          `sql:"-" json:"quote"`
+	Market        string          `sql:"-" json:"market"`
 	QuoteCurrency Currency        `sql:"-" json:"-"`
 }
 
@@ -35,6 +36,11 @@ func (quote *Quote) AfterFind() {
 		if currency.Id == quote.QuoteId {
 			quote.QuoteCurrency = currency
 			quote.Quote = currency.Symbol
+		}
+	}
+	for _, market := range AllMarkets {
+		if quote.MarketId == market.Id {
+			quote.Market = market.Symbol
 		}
 	}
 }
