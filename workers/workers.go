@@ -34,6 +34,7 @@ func initialize() {
 	envConfig.InitEnv()
 	utils.InitDB()
 	initializers.InitializeAmqpConfig()
+	initializers.InitCacheData()
 
 	setLog()
 	err := os.MkdirAll("pids", 0755)
