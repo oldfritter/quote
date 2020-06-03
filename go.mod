@@ -7,7 +7,7 @@ require (
 	github.com/dafiti/echo-middleware v0.0.0-20180423194757-e57a87d075ea
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/gomodule/redigo v1.8.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/jinzhu/gorm v1.9.12
 	github.com/kylelemons/go-gypsy v0.0.0-20160905020020-08cad365cd28
