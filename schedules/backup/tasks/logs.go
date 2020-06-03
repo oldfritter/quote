@@ -18,7 +18,7 @@ type MyPutRet struct {
 }
 
 var (
-	logNames = []string{"api", "getData", "workers", "schedule"}
+	logNames = []string{"api", "getData", "worker", "schedule"}
 )
 
 func UploadLogFileToS3() {
