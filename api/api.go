@@ -36,7 +36,7 @@ func main() {
 	e.HideBanner = true
 	// Start server
 	go func() {
-		if err := e.Start(":9090"); err != nil {
+		if err := e.Start(":9091"); err != nil {
 			closeResource()
 			e.Logger.Info("shutting down the server")
 		}
