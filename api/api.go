@@ -15,6 +15,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	newrelic "github.com/oldfritter/echo-middleware"
+
+	"quote/initializers"
 )
 
 func main() {
@@ -64,6 +66,7 @@ func customHTTPErrorHandler(err error, context echo.Context) {
 
 func initialize() {
 	utils.InitDB()
+	initializers.InitCacheData()
 	setLog()
 
 	// 记录 pid

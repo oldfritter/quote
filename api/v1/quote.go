@@ -21,7 +21,7 @@ func GetApiQuotes(context echo.Context) error {
 	if context.QueryParam("symbols") != "" {
 		symbols = strings.Split(context.QueryParam("symbols"), ",")
 	}
-	if context.QueryParam("currency") != "" {
+	if context.QueryParam("currencies") != "" {
 		currencies = strings.Split(context.QueryParam("currencies"), ",")
 	}
 	for _, source := range strings.Split(context.QueryParam("sources"), ",") {
@@ -41,6 +41,7 @@ func GetApiQuotes(context echo.Context) error {
 			conditions = conditions.Joins("INNER JOIN (currencies) ON (currencies.id = quotes.quote_id)").Where("currencies.symbol in (?)", currencies)
 		}
 		conditions.Find(&coins[i].Quotes)
+
 	}
 	response := utils.ArrayResponse
 	response.Body = &Result{Data: coins}
