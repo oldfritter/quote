@@ -40,11 +40,11 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		}
 		subQuotes = append(subQuotes, sub)
 	}
-	if payload.Level == 0 {
-		for _, q := range subQuotes {
-			createSubQuote(&q, payload.Level+1)
-		}
-	}
+	// if payload.Level == 0 {
+	//   for _, q := range subQuotes {
+	//     createSubQuote(&q, payload.Level+1)
+	//   }
+	// }
 	return
 }
 
