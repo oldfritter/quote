@@ -18,7 +18,7 @@ func GetLocalQuote() error {
 		log.Println("dial:", err)
 		return err
 	}
-	err = c.WriteMessage(websocket.TextMessage, []byte("{\"symbols\":[\"btc\"],\"sources\":[\"binance\"],\"currencies\":[\"usd\"],\"id\":\"oldfritter\"}"))
+	err = c.WriteMessage(websocket.TextMessage, []byte("{\"symbols\":[\"btc\"],\"sources\":[\"binance\"],\"currencies\":[\"usd\",\"cny\"],\"id\":\"oldfritter\"}"))
 	if err != nil {
 		log.Println("write:", err)
 		return err

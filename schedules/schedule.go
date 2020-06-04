@@ -68,8 +68,8 @@ func InitSchedule() {
 	c.AddFunc("0 59 23 * * *", sourceData.CleanMarketExpiredKLine)
 	c.AddFunc("0 59 23 * * *", sourceData.CleanMarketExpiredPrice)
 
-	c.AddFunc("0 0 * * * *", binance.GetMarkets)
-	c.AddFunc("0 0 * * * *", huobi.GetMarkets)
+	c.AddFunc("0 * * * * *", binance.GetMarkets)
+	c.AddFunc("0 * * * * *", huobi.GetMarkets)
 
 	c.AddFunc("* * * * * *", baseRate.CnyToUsd)
 	c.AddFunc("* * * * * *", baseRate.UsdToCny)
