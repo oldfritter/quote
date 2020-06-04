@@ -66,6 +66,7 @@ func customHTTPErrorHandler(err error, context echo.Context) {
 
 func initialize() {
 	utils.InitDB()
+	utils.InitRedisPools()
 	initializers.InitCacheData()
 	setLog()
 

@@ -144,7 +144,7 @@ func createSubQuote(quote *Quote) {
 	if err != nil {
 		log.Println(err)
 	}
-	err = initializers.PublishMessageWithRouteKey("quote.default", "quote.build", "text/plain", &b, amqp.Table{}, amqp.Persistent)
+	err = initializers.PublishMessageWithRouteKey("quote.default", "quote.sub.build", "text/plain", &b, amqp.Table{}, amqp.Persistent)
 	if err != nil {
 		log.Println(err)
 	}

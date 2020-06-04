@@ -33,6 +33,7 @@ func main() {
 func initialize() {
 	envConfig.InitEnv()
 	utils.InitDB()
+	utils.InitRedisPools()
 	initializers.InitializeAmqpConfig()
 	initializers.InitCacheData()
 

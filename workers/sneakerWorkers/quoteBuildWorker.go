@@ -2,6 +2,7 @@ package sneakerWorkers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -12,9 +13,10 @@ import (
 	"quote/utils"
 )
 
-func (worker Worker) QuoteBuildWorker(payloadJson *[]byte) (err error) {
+func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	var payload struct {
-		Id int `json:"id"`
+		Id    int `json:"id"`
+		Level int `json:"level"`
 	}
 	json.Unmarshal([]byte(*payloadJson), &payload)
 	db := utils.DbBegin()
@@ -24,45 +26,62 @@ func (worker Worker) QuoteBuildWorker(payloadJson *[]byte) (err error) {
 		return
 	}
 	var quotes []Quote
-	if db.Where("`source` in (?)", []string{"local", origin.Source}).Where("base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
-		return
+	if payload.Level == 0 {
+		if db.Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
+			return
+		}
 	}
+	db.DbRollback()
 	var subQuotes []Quote
 	for _, q := range quotes {
-		m := utils.DbBegin()
-		defer m.DbRollback()
-		var subQuote Quote
-		m.FirstOrInit(&subQuote, map[string]interface{}{
-			"type":      origin.Type,
-			"base_id":   origin.BaseId,
-			"quote_id":  q.QuoteId,
-			"market_id": origin.MarketId,
-			"source":    origin.Source,
-		})
-		subQuote.QuoteCurrency = q.QuoteCurrency
-		subQuote.Price = origin.Price.Mul(q.Price)
-		subQuote.Timestamp = time.Now().UnixNano() / 1000000
-		m.Save(&subQuote)
-		m.DbCommit()
-		subQuotes = append(subQuotes, subQuote)
+		sub, err := subQuote(&origin, &q)
+		if err != nil {
+			continue
+		}
+		subQuotes = append(subQuotes, sub)
 	}
-	db.DbCommit()
-	if origin.QuoteCurrency.Source != "local" {
+	if payload.Level == 0 {
 		for _, q := range subQuotes {
-			if q.QuoteCurrency.Source != "local" {
-				createSubQuote(&q)
-			}
+			createSubQuote(&q, payload.Level+1)
 		}
 	}
 	return
 }
 
-func createSubQuote(quote *Quote) {
-	b, err := json.Marshal(map[string]int{"id": quote.Id})
+func subQuote(origin, q *Quote) (Quote, error) {
+	var subQuote Quote
+	m := utils.DbBegin()
+	defer m.DbRollback()
+	if !m.Where("type = ?", origin.Type).
+		Where("base_id = ?", origin.BaseId).
+		Where("quote_id = ?", q.QuoteId).
+		Where("market_id = ?", origin.MarketId).
+		Where("source = ?", origin.Source).
+		First(&subQuote).RecordNotFound() {
+		if subQuote.Timestamp >= origin.Timestamp {
+			return subQuote, fmt.Errorf("Already have.")
+		}
+	}
+	subQuote.QuoteCurrency = q.QuoteCurrency
+	subQuote.Price = origin.Price.Mul(q.Price)
+	subQuote.Timestamp = time.Now().UnixNano() / 1000000
+	m.Save(&subQuote)
+	m.DbCommit()
+	return subQuote, nil
+}
+
+func createSubQuote(quote *Quote, level int) {
+	b, err := json.Marshal(struct {
+		Id    int `json:"id"`
+		Level int `json:"level"`
+	}{
+		Id:    quote.Id,
+		Level: level,
+	})
 	if err != nil {
 		log.Println(err)
 	}
-	err = initializers.PublishMessageWithRouteKey("quote.default", "quote.build", "text/plain", &b, amqp.Table{}, amqp.Persistent)
+	err = initializers.PublishMessageWithRouteKey("quote.default", "quote.sub.build", "text/plain", &b, amqp.Table{}, amqp.Persistent)
 	if err != nil {
 		log.Println(err)
 	}
