@@ -52,12 +52,18 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	var subQuote Quote
 	m := utils.DbBegin()
 	defer m.DbRollback()
-	if !m.Where("type = ?", origin.Type).
+	if m.Where("type = ?", origin.Type).
 		Where("base_id = ?", origin.BaseId).
 		Where("quote_id = ?", q.QuoteId).
 		Where("market_id = ?", origin.MarketId).
 		Where("source = ?", origin.Source).
 		First(&subQuote).RecordNotFound() {
+		subQuote.Type = origin.Type
+		subQuote.BaseId = origin.BaseId
+		subQuote.MarketId = origin.MarketId
+		subQuote.Source = origin.Source
+		subQuote.QuoteId = q.QuoteId
+	} else {
 		if subQuote.Timestamp >= origin.Timestamp {
 			return subQuote, fmt.Errorf("Already have.")
 		}
