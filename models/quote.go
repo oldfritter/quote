@@ -38,18 +38,23 @@ func (quote *Quote) AfterFind() {
 			quote.Quote = currency.Symbol
 		}
 	}
-	for _, market := range AllMarkets {
-		if quote.MarketId == market.Id {
-			quote.Market = market.Symbol
+	if quote.MarketId != 0 {
+		for _, market := range AllMarkets {
+			if quote.MarketId == market.Id {
+				quote.Market = market.Symbol
+			}
 		}
 	}
 }
 
-func (quote *Quote) AfterUpdate() {
-	quote.notifyQuote()
+func (quote *Quote) AfterSave() {
+	if quote.QuoteId > 384 && quote.Id == 293915 {
+		log.Println("AfterUpdate quote:", quote)
+	}
+	quote.NotifyQuote()
 }
 
-func (quote *Quote) notifyQuote() {
+func (quote *Quote) NotifyQuote() {
 	b, err := json.Marshal(*quote)
 	if err != nil {
 		log.Println("error:", err)

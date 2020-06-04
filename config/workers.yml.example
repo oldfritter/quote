@@ -7,10 +7,10 @@
   durable: true
   threads: 2
 
-- name: QuoteBuildWorker
+- name: SubQuoteBuildWorker
   exchange: quote.default
-  routing_key: quote.build
-  queue: quote.build
+  routing_key: quote.sub.build
+  queue: quote.sub.build
   log: logs/quote.log
   durable: true
   threads: 2
