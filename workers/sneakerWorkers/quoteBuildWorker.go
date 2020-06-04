@@ -30,6 +30,10 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		if db.Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
 			return
 		}
+	} else {
+		if db.Joins("INNER JOIN (currencies as c) ON (c.id = quotes.base_id)").Where("symbol in (?)", []string{"usd", "cny"}).Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
+			return
+		}
 	}
 	db.DbRollback()
 	var subQuotes []Quote
