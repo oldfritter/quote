@@ -42,7 +42,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	}
 	if payload.Level == 0 {
 		for _, q := range subQuotes {
-			if subQuotes.Quote == "usd" {
+			if q.Quote == "usd" {
 				createSubQuote(&q, payload.Level+1)
 			}
 		}
