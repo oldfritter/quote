@@ -76,7 +76,7 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	}
 	subQuote.QuoteCurrency = q.QuoteCurrency
 	subQuote.Price = origin.Price.Mul(q.Price)
-	subQuote.Timestamp = time.Now().UnixNano() / 1000000
+	subQuote.Timestamp = origin.Timestamp
 	m.Save(&subQuote)
 	m.DbCommit()
 	return subQuote, nil
