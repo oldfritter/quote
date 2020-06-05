@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/shopspring/decimal"
@@ -82,12 +81,23 @@ func GetHuobiPrice() error {
 						redis.Save(&m, &kLine)
 					}
 				}
+			} else {
+				var ping struct {
+					Ping int64 `json:"ping"`
+				}
+				b, err := json.Marshal(&ping)
+				if err != nil {
+					log.Println("write:", err)
+					continue
+				}
+				err = c.WriteMessage(websocket.TextMessage, b)
+				if err != nil {
+					log.Println("write:", err)
+					continue
+				}
 			}
 		}
 	}()
-
-	ticker := time.NewTicker(time.Minute)
-	defer ticker.Stop()
 
 	for {
 		select {
@@ -95,12 +105,6 @@ func GetHuobiPrice() error {
 			return fmt.Errorf("connect is closed!")
 		case <-reloadChan:
 			return fmt.Errorf("connect need reopen!")
-		case t := <-ticker.C:
-			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
-			if err != nil {
-				log.Println("write:", err)
-				return err
-			}
 		}
 	}
 	return nil
