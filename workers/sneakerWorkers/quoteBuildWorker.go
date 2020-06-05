@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/streadway/amqp"
 
@@ -13,6 +14,7 @@ import (
 )
 
 func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
+	start := time.Now().UnixNano()
 	var payload struct {
 		Id    int `json:"id"`
 		Level int `json:"level"`
@@ -26,11 +28,11 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	}
 	var quotes []Quote
 	if payload.Level == 0 {
-		if db.Debug().Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
+		if db.Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
 			return
 		}
 	} else {
-		if db.Debug().Joins("INNER JOIN (currencies as c) ON (c.id = quotes.base_id)").Where("symbol in (?)", []string{"usd", "cny"}).Where("quotes.`source` = ?", "local").Where("quotes.base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
+		if db.Joins("INNER JOIN (currencies as c) ON (c.id = quotes.base_id)").Where("symbol in (?)", []string{"usd", "cny"}).Where("quotes.`source` = ?", "local").Where("quotes.base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
 			return
 		}
 	}
@@ -50,6 +52,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	//     }
 	//   }
 	// }
+	worker.LogInfo(" payload: ", payload, ", time:", (time.Now().UnixNano()-start)/1000000, " ms")
 	return
 }
 
@@ -57,7 +60,7 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	var subQuote Quote
 	m := utils.DbBegin()
 	defer m.DbRollback()
-	if m.Debug().Where("type = ?", origin.Type).
+	if m.Where("type = ?", origin.Type).
 		Where("base_id = ?", origin.BaseId).
 		Where("quote_id = ?", q.QuoteId).
 		Where("market_id = ?", origin.MarketId).
@@ -76,7 +79,7 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	subQuote.QuoteCurrency = q.QuoteCurrency
 	subQuote.Price = origin.Price.Mul(q.Price)
 	subQuote.Timestamp = origin.Timestamp
-	m.Debug().Save(&subQuote)
+	m.Save(&subQuote)
 	m.DbCommit()
 	return subQuote, nil
 }
