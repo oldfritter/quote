@@ -11,7 +11,7 @@ import (
 	envConfig "quote/config"
 	"quote/initializers"
 	"quote/models"
-	"quote/sourceData/binance"
+	// "quote/sourceData/binance"
 	"quote/sourceData/huobi"
 	"quote/utils"
 )
@@ -26,12 +26,12 @@ func main() {
 		}
 	}()
 
-	go func() {
-		err := binance.GetBinancePrices()
-		for err != nil {
-			err = binance.GetBinancePrices()
-		}
-	}()
+	// go func() {
+	//   err := binance.GetBinancePrices()
+	//   for err != nil {
+	//     err = binance.GetBinancePrices()
+	//   }
+	// }()
 
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
