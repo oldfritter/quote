@@ -27,7 +27,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	}
 	var quotes []Quote
 	if payload.Level == 0 {
-		if db.Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
+		if db.Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
 			return
 		}
 	} else {
