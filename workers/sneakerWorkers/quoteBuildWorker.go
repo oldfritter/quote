@@ -26,11 +26,11 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	}
 	var quotes []Quote
 	if payload.Level == 0 {
-		if db.Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
+		if db.Debug().Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
 			return
 		}
 	} else {
-		if db.Joins("INNER JOIN (currencies as c) ON (c.id = quotes.base_id)").Where("symbol in (?)", []string{"usd", "cny"}).Where("quotes.`source` = ?", "local").Where("quotes.base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
+		if db.Debug().Joins("INNER JOIN (currencies as c) ON (c.id = quotes.base_id)").Where("symbol in (?)", []string{"usd", "cny"}).Where("quotes.`source` = ?", "local").Where("quotes.base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
 			return
 		}
 	}
@@ -57,7 +57,7 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	var subQuote Quote
 	m := utils.DbBegin()
 	defer m.DbRollback()
-	if m.Where("type = ?", origin.Type).
+	if m.Debug().Where("type = ?", origin.Type).
 		Where("base_id = ?", origin.BaseId).
 		Where("quote_id = ?", q.QuoteId).
 		Where("market_id = ?", origin.MarketId).
@@ -76,7 +76,7 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	subQuote.QuoteCurrency = q.QuoteCurrency
 	subQuote.Price = origin.Price.Mul(q.Price)
 	subQuote.Timestamp = origin.Timestamp
-	m.Save(&subQuote)
+	m.Debug().Save(&subQuote)
 	m.DbCommit()
 	return subQuote, nil
 }
