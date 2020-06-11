@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/streadway/amqp"
 
+	"quote/initializers"
 	. "quote/models"
 	"quote/utils"
 )

@@ -13,8 +13,7 @@ func Filter(next echo.HandlerFunc) echo.HandlerFunc {
 		key := context.RealIP()
 		times, _ := redis.Int(limitRedis.Do("GET", key))
 		if times == 0 {
-			limitRedis.Do("Set", key, 1)
-			limitRedis.Do("EXPIRE", key, 60)
+			limitRedis.Do("SETEX", key, 1, 60)
 		} else {
 			if times > 100 {
 				return utils.BuildError("1021")
