@@ -15,6 +15,7 @@ import (
 	"quote/models"
 	"quote/schedules/backup/tasks"
 	"quote/schedules/baseRate"
+	"quote/schedules/rfinex"
 	"quote/schedules/sourceData"
 	"quote/sourceData/binance"
 	"quote/sourceData/huobi"
@@ -74,6 +75,8 @@ func InitSchedule() {
 	c.AddFunc("* * * * * *", baseRate.CnyToUsd)
 	c.AddFunc("* * * * * *", baseRate.UsdToCny)
 	c.AddFunc("0 * * * * *", baseRate.UsdtToUsd)
+
+	c.AddFunc("*/5 * * * * *", rfinex.GetRfinexTickers)
 
 	c.Start()
 }
