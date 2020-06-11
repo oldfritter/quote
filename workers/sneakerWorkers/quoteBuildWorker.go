@@ -16,8 +16,7 @@ import (
 func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	start := time.Now().UnixNano()
 	var payload struct {
-		Id    int `json:"id"`
-		Level int `json:"level"`
+		Id int `json:"id"`
 	}
 	json.Unmarshal([]byte(*payloadJson), &payload)
 	db := utils.DbBegin()
@@ -27,31 +26,16 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		return
 	}
 	var quotes []Quote
-	if payload.Level == 0 {
-		if db.Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
-			return
-		}
-	} else {
-		if db.Joins("INNER JOIN (currencies as c) ON (c.id = quotes.base_id)").Where("symbol in (?)", []string{"usd", "cny", "cnst"}).Where("quotes.`source` = ?", "local").Where("quotes.base_id = ?", origin.QuoteId).Find(&quotes).RecordNotFound() {
-			return
-		}
+	if db.Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
+		return
 	}
 	db.DbRollback()
-	// var subQuotes []Quote
 	for _, q := range quotes {
 		_, err := subQuote(&origin, &q)
 		if err != nil {
 			continue
 		}
-		// subQuotes = append(subQuotes, sub)
 	}
-	// if payload.Level == 0 {
-	//   for _, q := range subQuotes {
-	//     if q.Quote == "usd" {
-	//       createSubQuote(&q, payload.Level+1)
-	//     }
-	//   }
-	// }
 	worker.LogInfo(" payload: ", payload, ", time:", (time.Now().UnixNano()-start)/1000000, " ms")
 	return
 }

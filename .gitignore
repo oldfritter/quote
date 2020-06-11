@@ -1,3 +1,4 @@
+cmd/*
 config/amqp.yml
 config/database.yml
 config/deploy.yml
@@ -5,6 +6,7 @@ config/redis.yml
 config/currencies.yml
 config/markets.yml
 config/aws_s3.yml
+config/workers.yml
 logs/*
 vendor/
 Godeps/
