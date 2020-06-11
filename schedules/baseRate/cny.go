@@ -30,7 +30,7 @@ func CnyToUsd() {
 	price, _ := decimal.NewFromString(p)
 	db := utils.DbBegin()
 	defer db.DbRollback()
-	var usd, cny Currency
+	var usd, cny, cnst Currency
 	db.FirstOrInit(&usd, map[string]interface{}{
 		"key":     "USD",
 		"symbol":  "usd",
@@ -45,7 +45,14 @@ func CnyToUsd() {
 		"visible": true,
 	})
 	db.Save(&cny)
-	var quote Quote
+	db.FirstOrInit(&cnst, map[string]interface{}{
+		"key":     "CNST",
+		"symbol":  "cnst",
+		"source":  "local",
+		"visible": true,
+	})
+	db.Save(&cnst)
+	var quote, cnstQuote Quote
 	db.FirstOrInit(&quote, map[string]interface{}{
 		"base_id":  cny.Id,
 		"quote_id": usd.Id,
@@ -55,6 +62,15 @@ func CnyToUsd() {
 	quote.Timestamp = time.Now().UnixNano() / 1000000
 	quote.Price = price
 	db.Save(&quote)
+	db.FirstOrInit(&cnstQuote, map[string]interface{}{
+		"base_id":  cnst.Id,
+		"quote_id": usd.Id,
+		"source":   "local",
+		"type":     "Quotes::Local",
+	})
+	cnstQuote.Timestamp = time.Now().UnixNano() / 1000000
+	cnstQuote.Price = price
+	db.Save(&cnstQuote)
 	db.DbCommit()
 }
 
@@ -74,7 +90,7 @@ func UsdToCny() {
 	price, _ := decimal.NewFromString(p)
 	db := utils.DbBegin()
 	defer db.DbRollback()
-	var usd, cny Currency
+	var usd, cny, cnst Currency
 	db.FirstOrInit(&usd, map[string]interface{}{
 		"key":     "USD",
 		"symbol":  "usd",
@@ -89,7 +105,14 @@ func UsdToCny() {
 		"visible": true,
 	})
 	db.Save(&cny)
-	var quote Quote
+	db.FirstOrInit(&cnst, map[string]interface{}{
+		"key":     "CNST",
+		"symbol":  "cnst",
+		"source":  "local",
+		"visible": true,
+	})
+	db.Save(&cnst)
+	var quote, cnstQuote Quote
 	db.FirstOrInit(&quote, map[string]interface{}{
 		"base_id":  usd.Id,
 		"quote_id": cny.Id,
@@ -99,5 +122,14 @@ func UsdToCny() {
 	quote.Timestamp = time.Now().UnixNano() / 1000000
 	quote.Price = price
 	db.Save(&quote)
+	db.FirstOrInit(&cnstQuote, map[string]interface{}{
+		"base_id":  usd.Id,
+		"quote_id": cnst.Id,
+		"source":   "local",
+		"type":     "Quotes::Local",
+	})
+	cnstQuote.Timestamp = time.Now().UnixNano() / 1000000
+	cnstQuote.Price = price
+	db.Save(&cnstQuote)
 	db.DbCommit()
 }
