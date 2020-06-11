@@ -21,6 +21,6 @@ func Filter(next echo.HandlerFunc) echo.HandlerFunc {
 				limitRedis.Do("INCR", key)
 			}
 		}
-		return
+		return next(context)
 	}
 }
