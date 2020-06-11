@@ -48,9 +48,6 @@ func (quote *Quote) AfterFind() {
 }
 
 func (quote *Quote) AfterSave() {
-	if quote.QuoteId > 384 && quote.Id == 293915 {
-		log.Println("AfterUpdate quote:", quote)
-	}
 	quote.NotifyQuote()
 }
 

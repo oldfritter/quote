@@ -3,3 +3,4 @@
     '1000': Success.
   error_code:
     '1020': No coin can be found.
+    '1021': 访问频率过高.

@@ -62,6 +62,21 @@ func GetRfinexTickers() {
 		quote.Price = m.Ticker.Last
 		quote.Timestamp = m.At * 1000
 		db.Save(&quote)
+		createSubQuote(&quote)
 	}
 	db.DbCommit()
+}
+
+func createSubQuote(quote *Quote) {
+	if quote.QuoteCurrency.Source == "local" {
+		return
+	}
+	b, err := json.Marshal(map[string]int{"id": quote.Id})
+	if err != nil {
+		log.Println(err)
+	}
+	err = initializers.PublishMessageWithRouteKey("quote.default", "quote.sub.build", "text/plain", &b, amqp.Table{}, amqp.Persistent)
+	if err != nil {
+		log.Println(err)
+	}
 }
