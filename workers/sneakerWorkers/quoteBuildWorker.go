@@ -45,13 +45,13 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		}
 		subQuotes = append(subQuotes, sub)
 	}
-	// if payload.Level == 0 {
-	//   for _, q := range subQuotes {
-	//     if q.Quote == "usd" {
-	//       createSubQuote(&q, payload.Level+1)
-	//     }
-	//   }
-	// }
+	if payload.Level == 0 {
+		for _, q := range subQuotes {
+			if q.Quote == "usd" {
+				createSubQuote(&q, payload.Level+1)
+			}
+		}
+	}
 	worker.LogInfo(" payload: ", payload, ", time:", (time.Now().UnixNano()-start)/1000000, " ms")
 	return
 }
