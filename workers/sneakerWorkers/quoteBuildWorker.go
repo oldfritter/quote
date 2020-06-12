@@ -16,8 +16,7 @@ import (
 func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	start := time.Now().UnixNano()
 	var payload struct {
-		Id    int `json:"id"`
-		Level int `json:"level"`
+		Id int `json:"id"`
 	}
 	json.Unmarshal([]byte(*payloadJson), &payload)
 	db := utils.DbBegin()
@@ -27,12 +26,12 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		return
 	}
 	var quotes []Quote
-	if payload.Level == 0 {
-		if db.Where("`source` = ?", origin.Source).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
+	if origin.IsLegal() {
+		if db.Where("`source` = ?", "local").Where("base_id = ?", origin.QuoteId).Where("market_id = 0").Find(&quotes).RecordNotFound() {
 			return
 		}
 	} else {
-		if db.Where("`source` = ?", "local").Where("base_id = ?", origin.QuoteId).Where("market_id = 0").Find(&quotes).RecordNotFound() {
+		if db.Where("`source` in (?)", []string{origin.Source, "local"}).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
 			return
 		}
 	}
@@ -42,8 +41,8 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		if err != nil {
 			continue
 		}
-		if payload.Level == 0 && (q.Base == "usd" || q.Base == "cny" || q.Base == "cnst") {
-			createSubQuote(&sub, payload.Level+1)
+		if !q.IsLegal() && sub.IsLegal() {
+			createSubQuote(&sub)
 		}
 	}
 	worker.LogInfo(" payload: ", payload, ", time:", (time.Now().UnixNano()-start)/1000000, " ms")
@@ -81,13 +80,11 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	return subQuote, nil
 }
 
-func createSubQuote(quote *Quote, level int) {
+func createSubQuote(quote *Quote) {
 	b, err := json.Marshal(struct {
-		Id    int `json:"id"`
-		Level int `json:"level"`
+		Id int `json:"id"`
 	}{
-		Id:    quote.Id,
-		Level: level,
+		Id: quote.Id,
 	})
 	if err != nil {
 		log.Println(err)

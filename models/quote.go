@@ -28,6 +28,9 @@ type Quote struct {
 }
 
 func (quote *Quote) AfterFind() {
+	quote.SetAttrs()
+}
+func (quote *Quote) SetAttrs() {
 	quote.Source = strings.ToLower(strings.Split(quote.Type, "Quotes::")[1])
 	for _, currency := range AllCurrencies {
 		if currency.Id == quote.BaseId {
@@ -49,6 +52,15 @@ func (quote *Quote) AfterFind() {
 
 func (quote *Quote) AfterSave() {
 	quote.NotifyQuote()
+}
+func (quote *Quote) IsLegal() (no bool) {
+	quote.SetAttrs()
+	for _, c := range []string{"usd", "cny", "cnst"} {
+		if quote.Quote == c {
+			return true
+		}
+	}
+	return
 }
 
 func (quote *Quote) NotifyQuote() {
