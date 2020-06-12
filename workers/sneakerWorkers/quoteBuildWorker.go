@@ -38,12 +38,12 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	}
 	db.DbRollback()
 	for _, q := range quotes {
-		_, err := subQuote(&origin, &q)
+		sub, err := subQuote(&origin, &q)
 		if err != nil {
 			continue
 		}
 		if payload.Level == 0 && (q.Base == "usd" || q.Base == "cny" || q.Base == "cnst") {
-			createSubQuote(&q, payload.Level+1)
+			createSubQuote(&sub, payload.Level+1)
 		}
 	}
 	worker.LogInfo(" payload: ", payload, ", time:", (time.Now().UnixNano()-start)/1000000, " ms")
