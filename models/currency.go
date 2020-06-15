@@ -10,7 +10,7 @@ import (
 
 type Currency struct {
 	CommonModel
-	Key     string  `json:"key"`     // 币的唯一标示
+	Key     string  `json:"name"`    // 币的唯一标示
 	Symbol  string  `json:"symbol"`  // 币的简称
 	Source  string  `json:"source"`  // 币的来源，交易所
 	Visible bool    `json:"visible"` // 是否可用

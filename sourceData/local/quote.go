@@ -10,7 +10,7 @@ import (
 )
 
 func GetLocalQuote() error {
-	u := url.URL{Scheme: "ws", Host: "3.34.197.24", Path: "/ws"}
+	u := url.URL{Scheme: "wss", Host: "api.bitip.in", Path: "/ws"}
 	log.Println("connecting to ", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
