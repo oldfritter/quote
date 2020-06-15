@@ -16,7 +16,7 @@ type Result struct {
 func GetApiQuotes(context echo.Context) error {
 	db := utils.DbBegin()
 	defer db.DbRollback()
-	var coins []Currency
+	var coins, result []Currency
 	var symbols, currencies, sources []string
 	if context.QueryParam("symbols") != "" {
 		symbols = strings.Split(context.QueryParam("symbols"), ",")
@@ -49,9 +49,11 @@ func GetApiQuotes(context echo.Context) error {
 			conditions = conditions.Joins("INNER JOIN (currencies) ON (currencies.id = quotes.quote_id)").Where("currencies.symbol in (?)", currencies)
 		}
 		conditions.Find(&coins[i].Quotes)
-
+		if len(coins[i].Quotes) > 0 {
+			result = append(result, coins[i])
+		}
 	}
 	response := utils.ArrayResponse
-	response.Body = &Result{Data: coins}
+	response.Body = &Result{Data: result}
 	return context.JSON(http.StatusOK, response)
 }
