@@ -32,11 +32,11 @@ func GetApiQuotes(context echo.Context) error {
 			sources = append(sources, "Quotes::"+strings.Title(source))
 		}
 	}
-	for _, source := range strings.Split(context.QueryParam("source"), ",") {
-		if source != "" {
-			sources = append(sources, "Quotes::"+strings.Title(source))
-		}
-	}
+	// for _, source := range strings.Split(context.QueryParam("source"), ",") {
+	//   if source != "" {
+	//     sources = append(sources, "Quotes::"+strings.Title(source))
+	//   }
+	// }
 	if db.Where("symbol in (?)", symbols).Find(&coins).RecordNotFound() {
 		return utils.BuildError("1020")
 	}
