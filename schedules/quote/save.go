@@ -3,7 +3,7 @@ package quote
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	// "log"
 
 	"github.com/gomodule/redigo/redis"
 
@@ -31,7 +31,7 @@ func SaveDataFromRedis() {
 			var quote Quote
 			json.Unmarshal(qByte, &quote)
 			m.Save(&quote)
-			log.Println(quote)
+			// log.Println(quote)
 		}
 	}
 	m.DbCommit()
