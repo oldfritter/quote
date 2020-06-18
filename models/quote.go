@@ -66,7 +66,7 @@ func (quote *Quote) SaveToRedis() {
 	if err != nil {
 		log.Println("error:", err)
 	}
-	dataRedis.Do("SET", quote.RedisKey(), b)
+	dataRedis.Do("SETEX", quote.RedisKey(), 60, b)
 }
 
 func (quote *Quote) IsLegal() (no bool) {
