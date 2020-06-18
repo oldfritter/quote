@@ -41,10 +41,11 @@ func Quotes(w http.ResponseWriter, r *http.Request) {
 		func(channel string, m []byte) error {
 			var message struct {
 				Timestamp int64  `json:"timestamp"`
-				Price     string `json:"price"`
 				Source    string `json:"source"`
+				Market    string `json:"market"`
 				Base      string `json:"base"`
 				Quote     string `json:"quote"`
+				Price     string `json:"price"`
 			}
 			if channel == RedisNotify {
 				json.Unmarshal(m, &message)
