@@ -64,6 +64,9 @@ func subQuote(origin, q *Quote) (Quote, error) {
 		subQuote.MarketId = origin.MarketId
 		subQuote.Source = origin.Source
 		subQuote.QuoteId = q.QuoteId
+		subQuote.Price = origin.Price.Mul(q.Price)
+		subQuote.Timestamp = origin.Timestamp
+		m.Save(&subQuote)
 	} else {
 		if subQuote.Timestamp >= origin.Timestamp {
 			return subQuote, fmt.Errorf("Already have.")

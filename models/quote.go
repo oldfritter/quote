@@ -15,10 +15,10 @@ const RedisNotify = "quote"
 
 type Quote struct {
 	CommonModel
-	Type          string          `json:"-"`
-	BaseId        int             `json:"-"`
-	QuoteId       int             `json:"-"`
-	MarketId      int             `json:"-"`
+	Type          string          `json:"type"`
+	BaseId        int             `json:"base_id"`
+	QuoteId       int             `json:"quote_id"`
+	MarketId      int             `json:"market_id"`
 	Timestamp     int64           `json:"timestamp"`
 	Price         decimal.Decimal `json:"price" gorm:"type:decimal(32,16);default:0;"`
 	Source        string          `json:"source"`
@@ -51,9 +51,9 @@ func (quote *Quote) SetAttrs() {
 	}
 }
 
-func (quote *Quote) AfterSave() {
-	quote.NotifyQuote()
-}
+// func (quote *Quote) AfterSave() {
+//   quote.NotifyQuote()
+// }
 
 func (quote *Quote) RedisKey() string {
 	return fmt.Sprintf("Quotes:%v:%v:%v", quote.MarketId, quote.BaseId, quote.QuoteId)
