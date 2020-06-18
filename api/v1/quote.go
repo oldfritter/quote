@@ -17,7 +17,7 @@ func GetApiQuotes(context echo.Context) error {
 	db := utils.DbBegin()
 	defer db.DbRollback()
 	var coins []Currency
-	var symbols, currencies, sources []string
+	var symbols, currencies, sources, ss []string
 	if context.QueryParam("symbols") != "" {
 		symbols = strings.Split(context.QueryParam("symbols"), ",")
 	}
@@ -27,10 +27,17 @@ func GetApiQuotes(context echo.Context) error {
 	for _, source := range strings.Split(context.QueryParam("sources"), ",") {
 		if source != "" {
 			sources = append(sources, "Quotes::"+strings.Title(source))
+			ss = append(ss, strings.ToLower(source))
 		}
 	}
-	if db.Where("symbol in (?)", symbols).Find(&coins).RecordNotFound() {
-		return utils.BuildError("1020")
+	if len(sources) < 1 {
+		if db.Where("symbol in (?)", symbols).Find(&coins).RecordNotFound() {
+			return utils.BuildError("1020")
+		}
+	} else {
+		if db.Where("symbol in (?)", symbols).Where("source in (?)", ss).Find(&coins).RecordNotFound() {
+			return utils.BuildError("1020")
+		}
 	}
 	for i, coin := range coins {
 		conditions := db.Where("base_id = ?", coin.Id)
