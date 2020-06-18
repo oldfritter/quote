@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
@@ -53,6 +54,21 @@ func (quote *Quote) SetAttrs() {
 func (quote *Quote) AfterSave() {
 	quote.NotifyQuote()
 }
+
+func (quote *Quote) RedisKey() string {
+	return fmt.Sprintf("Quotes:%v:%v:%v", quote.MarketId, quote.BaseId, quote.QuoteId)
+}
+
+func (quote *Quote) SaveToRedis() {
+	dataRedis := utils.GetRedisConn("data")
+	defer dataRedis.Close()
+	b, err := json.Marshal(*quote)
+	if err != nil {
+		log.Println("error:", err)
+	}
+	dataRedis.Do("SET", quote.RedisKey(), b)
+}
+
 func (quote *Quote) IsLegal() (no bool) {
 	quote.SetAttrs()
 	for _, c := range []string{"usd", "cny", "cnst"} {

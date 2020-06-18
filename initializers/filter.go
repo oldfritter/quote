@@ -10,6 +10,7 @@ import (
 func Filter(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(context echo.Context) (err error) {
 		limitRedis := utils.GetRedisConn("limit")
+		defer limitRedis.Close()
 		key := context.RealIP()
 		times, _ := redis.Int(limitRedis.Do("GET", key))
 		if times == 0 {

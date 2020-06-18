@@ -75,8 +75,10 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	}
 	subQuote.Price = origin.Price.Mul(q.Price)
 	subQuote.Timestamp = origin.Timestamp
-	m.Save(&subQuote)
-	m.DbCommit()
+	subQuote.SaveToRedis()
+	subQuote.NotifyQuote()
+	// m.Save(&subQuote)
+	// m.DbCommit()
 	return subQuote, nil
 }
 
