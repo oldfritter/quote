@@ -24,7 +24,16 @@ func GetApiQuotes(context echo.Context) error {
 	if context.QueryParam("currencies") != "" {
 		currencies = strings.Split(context.QueryParam("currencies"), ",")
 	}
+	if context.QueryParam("currency") != "" {
+		currencies = strings.Split(context.QueryParam("currency"), ",")
+	}
 	for _, source := range strings.Split(context.QueryParam("sources"), ",") {
+		if source != "" {
+			sources = append(sources, "Quotes::"+strings.Title(source))
+			ss = append(ss, strings.ToLower(source))
+		}
+	}
+	for _, source := range strings.Split(context.QueryParam("source"), ",") {
 		if source != "" {
 			sources = append(sources, "Quotes::"+strings.Title(source))
 			ss = append(ss, strings.ToLower(source))
