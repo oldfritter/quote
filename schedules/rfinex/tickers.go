@@ -70,9 +70,6 @@ func GetRfinexTickers() {
 }
 
 func createSubQuote(quote *Quote) {
-	if quote.QuoteCurrency.Source == "local" {
-		return
-	}
 	b, err := json.Marshal(map[string]int{"id": quote.Id})
 	if err != nil {
 		log.Println(err)
