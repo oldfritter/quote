@@ -16,7 +16,8 @@ import (
 func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	start := time.Now().UnixNano()
 	var payload struct {
-		Id int `json:"id"`
+		Id    int `json:"id"`
+		Level int `json:"level"`
 	}
 	json.Unmarshal([]byte(*payloadJson), &payload)
 	db := utils.DbBegin()
@@ -35,8 +36,8 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		if err != nil {
 			continue
 		}
-		if !q.IsLegal() && (sub.IsLegal() || sub.IsAnchored()) {
-			createSubQuote(&sub)
+		if payload.Level < 5 && (sub.IsLegal() || sub.IsAnchored()) {
+			createSubQuote(&sub, payload.Level+1)
 		}
 	}
 	worker.LogInfo(" payload: ", payload, ", time:", (time.Now().UnixNano()-start)/1000000, " ms")
@@ -44,27 +45,17 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 }
 
 func subQuote(origin, q *Quote) (Quote, error) {
-	var subQuote Quote
-	m := utils.DbBegin()
-	defer m.DbRollback()
-	if m.Where("type = ?", origin.Type).
-		Where("base_id = ?", origin.BaseId).
-		Where("quote_id = ?", q.QuoteId).
-		Where("market_id = ?", origin.MarketId).
-		Where("source = ?", origin.Source).
-		First(&subQuote).RecordNotFound() {
-		subQuote.Type = origin.Type
-		subQuote.BaseId = origin.BaseId
-		subQuote.MarketId = origin.MarketId
-		subQuote.Source = origin.Source
-		subQuote.QuoteId = q.QuoteId
-		subQuote.Price = origin.Price.Mul(q.Price)
-		subQuote.Timestamp = origin.Timestamp
-		m.Save(&subQuote)
-	} else {
-		if subQuote.Timestamp >= origin.Timestamp {
-			return subQuote, fmt.Errorf("Already have.")
-		}
+	subQuote := Quote{
+		Type:      origin.Type,
+		BaseId:    origin.BaseId,
+		MarketId:  origin.MarketId,
+		Source:    origin.Source,
+		QuoteId:   q.QuoteId,
+		Price:     origin.Price.Mul(q.Price),
+		Timestamp: origin.Timestamp,
+	}
+	if subQuote.AlreadyHave() {
+		return subQuote, fmt.Errorf("Already have.")
 	}
 	subQuote.QuoteCurrency = q.QuoteCurrency
 	if subQuote.Price.Equal(origin.Price.Mul(q.Price)) {
@@ -77,11 +68,13 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	return subQuote, nil
 }
 
-func createSubQuote(quote *Quote) {
+func createSubQuote(quote *Quote, level int) {
 	b, err := json.Marshal(struct {
-		Id int `json:"id"`
+		Id    int `json:"id"`
+		Level int `json:"level"`
 	}{
-		Id: quote.Id,
+		Id:    quote.Id,
+		Level: level,
 	})
 	if err != nil {
 		log.Println(err)

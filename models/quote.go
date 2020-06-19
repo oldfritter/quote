@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/shopspring/decimal"
 
 	"quote/utils"
@@ -93,6 +94,17 @@ func (quote *Quote) IsLegal() (no bool) {
 		if quote.Quote == c {
 			return true
 		}
+	}
+	return
+}
+func (quote *Quote) AlreadyHave() (yes bool) {
+	dataRedis := utils.GetRedisConn("data")
+	defer dataRedis.Close()
+	str, _ := redis.Bytes(dataRedis.Do("GET", quote.RedisKey()))
+	var q Quote
+	json.Unmarshal(str, &q)
+	if quote.Timestamp < q.Timestamp {
+		yes = true
 	}
 	return
 }
