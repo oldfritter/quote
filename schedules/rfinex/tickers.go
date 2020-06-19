@@ -49,10 +49,10 @@ func GetRfinexTickers() {
 	defer db.DbRollback()
 	for _, m := range result.Body {
 		var market Market
-		db.FirstOrInit(&market, map[string]interface{}{"name": strings.ToUpper(m.Name), "symbol": strings.ToLower(m.Name), "source": "rfinex"})
+		db.Where("source in (?)", []string{"rfinex", "local"}).FirstOrInit(&market, map[string]interface{}{"name": strings.ToUpper(m.Name), "symbol": strings.ToLower(m.Name)})
 		var base, quoteCurrency Currency
-		db.FirstOrInit(&base, map[string]interface{}{"symbol": strings.ToLower(m.Code), "key": strings.ToUpper(m.Code), "visible": true, "source": "rfinex"})
-		db.FirstOrInit(&quoteCurrency, map[string]interface{}{"symbol": strings.ToLower(m.Quote), "key": strings.ToUpper(m.Quote), "visible": true, "source": "rfinex"})
+		db.Where("source in (?)", []string{"rfinex", "local"}).FirstOrInit(&base, map[string]interface{}{"symbol": strings.ToLower(m.Code), "key": strings.ToUpper(m.Code), "visible": true})
+		db.Where("source in (?)", []string{"rfinex", "local"}).FirstOrInit(&quoteCurrency, map[string]interface{}{"symbol": strings.ToLower(m.Quote), "key": strings.ToUpper(m.Quote), "visible": true})
 		db.Save(&base)
 		db.Save(&quoteCurrency)
 		market.BaseId = base.Id
@@ -60,7 +60,7 @@ func GetRfinexTickers() {
 		market.Visible = true
 		db.Save(&market)
 		var quote Quote
-		db.FirstOrInit(&quote, map[string]interface{}{"type": "Quotes::Rfinex", "base_id": base.Id, "quote_id": quoteCurrency.Id, "market_id": market.Id, "source": "rfinex"})
+		db.Where("source in (?)", []string{"rfinex", "local"}).FirstOrInit(&quote, map[string]interface{}{"type": "Quotes::Rfinex", "base_id": base.Id, "quote_id": quoteCurrency.Id, "market_id": market.Id})
 		quote.Price = m.Ticker.Last
 		quote.Timestamp = m.At * 1000
 		db.Save(&quote)
