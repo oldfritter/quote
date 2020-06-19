@@ -77,9 +77,19 @@ func (quote *Quote) SaveToRedis() {
 	dataRedis.Do("SETEX", quote.RedisKey(), 60, b)
 }
 
+func (quote *Quote) IsAnchored() (no bool) {
+	quote.SetAttrs()
+	for _, c := range []string{"usdt", "cnst"} {
+		if quote.Quote == c {
+			return true
+		}
+	}
+	return
+}
+
 func (quote *Quote) IsLegal() (no bool) {
 	quote.SetAttrs()
-	for _, c := range []string{"usd", "cny", "cnst"} {
+	for _, c := range []string{"usd", "cny"} {
 		if quote.Quote == c {
 			return true
 		}

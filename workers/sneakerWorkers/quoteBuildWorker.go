@@ -26,14 +26,8 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		return
 	}
 	var quotes []Quote
-	if origin.IsLegal() {
-		if db.Where("`source` = ?", "local").Where("base_id = ?", origin.QuoteId).Where("market_id = 0").Find(&quotes).RecordNotFound() {
-			return
-		}
-	} else {
-		if db.Where("`source` in (?)", []string{origin.Source, "local"}).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
-			return
-		}
+	if db.Where("`source` in (?)", []string{origin.Source, "local"}).Where("base_id = ?", origin.QuoteId).Group("quote_id").Find(&quotes).RecordNotFound() {
+		return
 	}
 	db.DbRollback()
 	for _, q := range quotes {
@@ -41,7 +35,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		if err != nil {
 			continue
 		}
-		if !q.IsLegal() && sub.IsLegal() {
+		if !q.IsLegal() && (sub.IsLegal() || sub.IsAnchored()) {
 			createSubQuote(&sub)
 		}
 	}
@@ -80,8 +74,6 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	subQuote.Timestamp = origin.Timestamp
 	subQuote.SaveToRedis()
 	subQuote.NotifyQuote()
-	// m.Save(&subQuote)
-	// m.DbCommit()
 	return subQuote, nil
 }
 
