@@ -55,9 +55,9 @@ func subQuote(origin, q *Quote) (Quote, error) {
 		Timestamp:     origin.Timestamp,
 		QuoteCurrency: q.QuoteCurrency,
 	}
-	if subQuote.AlreadyHave() {
-		return subQuote, fmt.Errorf("Already have.")
-	}
+	// if subQuote.AlreadyHave() {
+	//   return subQuote, fmt.Errorf("Already have.")
+	// }
 	subQuote.SaveToRedis()
 	subQuote.NotifyQuote()
 	return subQuote, nil
