@@ -2,7 +2,7 @@ package sneakerWorkers
 
 import (
 	"encoding/json"
-	"fmt"
+	// "fmt"
 	"log"
 	"time"
 
