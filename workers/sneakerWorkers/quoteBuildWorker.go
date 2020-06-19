@@ -54,7 +54,6 @@ func subQuote(origin, q *Quote) (Quote, error) {
 		Price:         origin.Price.Mul(q.Price),
 		Timestamp:     origin.Timestamp,
 		QuoteCurrency: q.QuoteCurrency,
-		Price:         origin.Price.Mul(q.Price),
 	}
 	if subQuote.AlreadyHave() {
 		return subQuote, fmt.Errorf("Already have.")
