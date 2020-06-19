@@ -15,10 +15,10 @@ const RedisNotify = "quote"
 
 type Quote struct {
 	CommonModel
-	Type          string          `json:"type"`
-	BaseId        int             `json:"base_id"`
-	QuoteId       int             `json:"quote_id"`
-	MarketId      int             `json:"market_id"`
+	Type          string          `json:"-"`
+	BaseId        int             `json:"-"`
+	QuoteId       int             `json:"-"`
+	MarketId      int             `json:"-"`
 	Timestamp     int64           `json:"timestamp"`
 	Price         decimal.Decimal `json:"price" gorm:"type:decimal(32,16);default:0;"`
 	Source        string          `json:"source"`
@@ -26,6 +26,14 @@ type Quote struct {
 	Quote         string          `sql:"-" json:"quote"`
 	Market        string          `sql:"-" json:"market"`
 	QuoteCurrency Currency        `sql:"-" json:"-"`
+}
+type SimpleQuote struct {
+	Timestamp int64           `json:"timestamp"`
+	Price     decimal.Decimal `json:"price" `
+	Source    string          `json:"source"`
+	Base      string          `json:"base"`
+	Quote     string          `json:"quote"`
+	Market    string          `json:"market"`
 }
 
 func (quote *Quote) AfterFind() {
@@ -80,7 +88,14 @@ func (quote *Quote) IsLegal() (no bool) {
 }
 
 func (quote *Quote) NotifyQuote() {
-	b, err := json.Marshal(*quote)
+	b, err := json.Marshal(SimpleQuote{
+		Timestamp: quote.Timestamp,
+		Price:     quote.Price,
+		Source:    quote.Source,
+		Base:      quote.Base,
+		Quote:     quote.Quote,
+		Market:    quote.Market,
+	})
 	if err != nil {
 		log.Println("error:", err)
 	}

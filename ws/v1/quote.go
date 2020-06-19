@@ -82,9 +82,7 @@ func Quotes(w http.ResponseWriter, r *http.Request) {
 				if !inQuote {
 					return nil
 				}
-				log.Println("message: ", message)
-				b, _ := json.Marshal(message)
-				err := c.WriteMessage(websocket.TextMessage, b)
+				err := c.WriteMessage(websocket.TextMessage, m)
 				if err != nil {
 					log.Println("write:", err)
 					cancel()
