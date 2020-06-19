@@ -46,23 +46,19 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 
 func subQuote(origin, q *Quote) (Quote, error) {
 	subQuote := Quote{
-		Type:      origin.Type,
-		BaseId:    origin.BaseId,
-		MarketId:  origin.MarketId,
-		Source:    origin.Source,
-		QuoteId:   q.QuoteId,
-		Price:     origin.Price.Mul(q.Price),
-		Timestamp: origin.Timestamp,
+		Type:          origin.Type,
+		BaseId:        origin.BaseId,
+		MarketId:      origin.MarketId,
+		Source:        origin.Source,
+		QuoteId:       q.QuoteId,
+		Price:         origin.Price.Mul(q.Price),
+		Timestamp:     origin.Timestamp,
+		QuoteCurrency: q.QuoteCurrency,
+		Price:         origin.Price.Mul(q.Price),
 	}
 	if subQuote.AlreadyHave() {
 		return subQuote, fmt.Errorf("Already have.")
 	}
-	subQuote.QuoteCurrency = q.QuoteCurrency
-	if subQuote.Price.Equal(origin.Price.Mul(q.Price)) {
-		return subQuote, fmt.Errorf("Already have.")
-	}
-	subQuote.Price = origin.Price.Mul(q.Price)
-	subQuote.Timestamp = origin.Timestamp
 	subQuote.SaveToRedis()
 	subQuote.NotifyQuote()
 	return subQuote, nil
