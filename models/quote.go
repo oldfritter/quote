@@ -60,10 +60,6 @@ func (quote *Quote) SetAttrs() {
 	}
 }
 
-// func (quote *Quote) AfterSave() {
-//   quote.NotifyQuote()
-// }
-
 func (quote *Quote) RedisKey() string {
 	return fmt.Sprintf("Quotes:%v:%v:%v", quote.MarketId, quote.BaseId, quote.QuoteId)
 }

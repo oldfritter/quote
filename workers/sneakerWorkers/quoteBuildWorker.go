@@ -2,7 +2,7 @@ package sneakerWorkers
 
 import (
 	"encoding/json"
-	// "fmt"
+	"fmt"
 	"log"
 	"time"
 
@@ -45,19 +45,29 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 }
 
 func subQuote(origin, q *Quote) (Quote, error) {
-	subQuote := Quote{
-		Type:          origin.Type,
-		BaseId:        origin.BaseId,
-		MarketId:      origin.MarketId,
-		Source:        origin.Source,
-		QuoteId:       q.QuoteId,
-		Price:         origin.Price.Mul(q.Price),
-		Timestamp:     origin.Timestamp,
-		QuoteCurrency: q.QuoteCurrency,
+	var subQuote Quote
+	m := utils.DbBegin()
+	defer m.DbRollback()
+	if m.Where("type = ?", origin.Type).
+		Where("base_id = ?", origin.BaseId).
+		Where("quote_id = ?", q.QuoteId).
+		Where("market_id = ?", origin.MarketId).
+		Where("source = ?", origin.Source).
+		FirstOrInit(&subQuote).RecordNotFound() {
+		subQuote.Price = origin.Price.Mul(q.Price)
+		subQuote.Timestamp = origin.Timestamp
+		m.Save(&subQuote)
+	} else {
+		if subQuote.Timestamp >= origin.Timestamp {
+			return subQuote, fmt.Errorf("Already have.")
+		}
 	}
-	// if subQuote.AlreadyHave() {
-	//   return subQuote, fmt.Errorf("Already have.")
-	// }
+	subQuote.QuoteCurrency = q.QuoteCurrency
+	if subQuote.Price.Equal(origin.Price.Mul(q.Price)) {
+		return subQuote, fmt.Errorf("Already have.")
+	}
+	subQuote.Price = origin.Price.Mul(q.Price)
+	subQuote.Timestamp = origin.Timestamp
 	subQuote.SaveToRedis()
 	subQuote.NotifyQuote()
 	return subQuote, nil
