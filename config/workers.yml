@@ -13,4 +13,4 @@
   queue: quote.sub.build
   log: logs/quote.log
   durable: true
-  threads: 2
+  threads: 16
