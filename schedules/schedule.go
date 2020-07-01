@@ -18,6 +18,7 @@ import (
 	"quote/schedules/quote"
 	"quote/schedules/rfinex"
 	"quote/schedules/sourceData"
+	"quote/schedules/watbtc"
 	"quote/sourceData/binance"
 	"quote/sourceData/huobi"
 	"quote/utils"
@@ -78,6 +79,7 @@ func InitSchedule() {
 	c.AddFunc("0 * * * * *", baseRate.UsdtToUsd)
 
 	c.AddFunc("*/10 * * * * *", rfinex.GetRfinexTickers)
+	c.AddFunc("*/10 * * * * *", watbtc.GetWatbtcTickers)
 
 	c.AddFunc("*/30 * * * * *", quote.SaveDataFromRedis)
 
