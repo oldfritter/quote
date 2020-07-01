@@ -57,8 +57,8 @@ func subQuote(origin, q *Quote) (Quote, error) {
 		subQuote.Timestamp = origin.Timestamp
 		subQuote.Price = origin.Price.Mul(q.Price)
 		subQuote.QuoteId = q.QuoteId
-		// m.Save(&subQuote)
-		// m.DbCommit()
+		m.Save(&subQuote)
+		m.DbCommit()
 	} else {
 		if subQuote.Timestamp > origin.Timestamp {
 			return subQuote, fmt.Errorf("Already have.")
