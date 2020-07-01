@@ -33,8 +33,8 @@ func GetWatbtcTickers() {
 		Body []struct {
 			At     int64  `json:"at"`
 			Name   string `json:"name"`
-			Code   string `json:"code"`
-			Quote  string `json:"quote"`
+			Code   string `json:"base_unit"`
+			Quote  string `json:"usdt"`
 			Ticker struct {
 				Last decimal.Decimal `json:"last"`
 			} `json:"ticker"`
