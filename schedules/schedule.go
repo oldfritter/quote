@@ -78,8 +78,8 @@ func InitSchedule() {
 	c.AddFunc("0 * * * * *", baseRate.UsdToCny)
 	c.AddFunc("0 * * * * *", baseRate.UsdtToUsd)
 
-	c.AddFunc("*/10 * * * * *", rfinex.GetRfinexTickers)
-	c.AddFunc("*/10 * * * * *", watbtc.GetWatbtcTickers)
+	c.AddFunc("*/30 * * * * *", rfinex.GetRfinexTickers)
+	c.AddFunc("*/30 * * * * *", watbtc.GetWatbtcTickers)
 
 	c.AddFunc("*/30 * * * * *", quote.SaveDataFromRedis)
 
