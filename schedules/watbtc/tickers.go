@@ -33,7 +33,7 @@ func GetWatbtcTickers() {
 		Body []struct {
 			Name   string `json:"name"`
 			Code   string `json:"base_unit"`
-			Quote  string `json:"usdt"`
+			Quote  string `json:"quote_unit"`
 			Ticker struct {
 				Last decimal.Decimal `json:"last"`
 			} `json:"ticker"`
@@ -52,7 +52,9 @@ func GetWatbtcTickers() {
 		var base, quoteCurrency Currency
 		db.Where("source in (?)", []string{"watbtc", "local"}).FirstOrInit(&base, map[string]interface{}{"symbol": strings.ToLower(m.Code), "key": strings.ToUpper(m.Code), "visible": true})
 		db.Where("source in (?)", []string{"watbtc", "local"}).FirstOrInit(&quoteCurrency, map[string]interface{}{"symbol": strings.ToLower(m.Quote), "key": strings.ToUpper(m.Quote), "visible": true})
+		base.Source = "watbtc"
 		db.Save(&base)
+		quoteCurrency.Source = "watbtc"
 		db.Save(&quoteCurrency)
 		market.BaseId = base.Id
 		market.QuoteId = quoteCurrency.Id
@@ -61,9 +63,9 @@ func GetWatbtcTickers() {
 		db.Save(&market)
 		var quote Quote
 		db.Where("source in (?)", []string{"watbtc", "local"}).FirstOrInit(&quote, map[string]interface{}{"type": "Quotes::Watbtc", "base_id": base.Id, "quote_id": quoteCurrency.Id, "market_id": market.Id})
-		quote.Source = "watbtc"
 		quote.Price = m.Ticker.Last
 		quote.Timestamp = time.Now().Unix() * 1000
+		quote.Source = "watbtc"
 		db.Save(&quote)
 		createSubQuote(&quote)
 	}

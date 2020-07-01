@@ -53,7 +53,9 @@ func GetRfinexTickers() {
 		var base, quoteCurrency Currency
 		db.Where("source in (?)", []string{"rfinex", "local"}).FirstOrInit(&base, map[string]interface{}{"symbol": strings.ToLower(m.Code), "key": strings.ToUpper(m.Code), "visible": true})
 		db.Where("source in (?)", []string{"rfinex", "local"}).FirstOrInit(&quoteCurrency, map[string]interface{}{"symbol": strings.ToLower(m.Quote), "key": strings.ToUpper(m.Quote), "visible": true})
+		base.Source = "rfinex"
 		db.Save(&base)
+		quoteCurrency.Source = "rfinex"
 		db.Save(&quoteCurrency)
 		market.BaseId = base.Id
 		market.QuoteId = quoteCurrency.Id
@@ -62,9 +64,9 @@ func GetRfinexTickers() {
 		db.Save(&market)
 		var quote Quote
 		db.Where("source in (?)", []string{"rfinex", "local"}).FirstOrInit(&quote, map[string]interface{}{"type": "Quotes::Rfinex", "base_id": base.Id, "quote_id": quoteCurrency.Id, "market_id": market.Id})
-		quote.Source = "rfinex"
 		quote.Price = m.Ticker.Last
 		quote.Timestamp = m.At * 1000
+		quote.Source = "rfinex"
 		db.Save(&quote)
 		createSubQuote(&quote)
 	}
