@@ -54,8 +54,8 @@ func subQuote(origin, q *Quote) (Quote, error) {
 		subQuote.BaseId = origin.BaseId
 		subQuote.MarketId = origin.MarketId
 		subQuote.Source = origin.Source
-		// subQuote.Timestamp = origin.Timestamp
-		// subQuote.Price = origin.Price.Mul(q.Price)
+		subQuote.Timestamp = origin.Timestamp
+		subQuote.Price = origin.Price.Mul(q.Price)
 		subQuote.QuoteId = q.QuoteId
 		// m.Save(&subQuote)
 		// m.DbCommit()
