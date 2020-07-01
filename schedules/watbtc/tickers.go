@@ -58,6 +58,7 @@ func GetWatbtcTickers() {
 		market.BaseId = base.Id
 		market.QuoteId = quoteCurrency.Id
 		market.Visible = true
+		market.Source = "watbtc"
 		db.Save(&market)
 		var quote Quote
 		db.Where("source in (?)", []string{"watbtc", "local"}).FirstOrInit(&quote, map[string]interface{}{"type": "Quotes::Watbtc", "base_id": base.Id, "quote_id": quoteCurrency.Id, "market_id": market.Id})

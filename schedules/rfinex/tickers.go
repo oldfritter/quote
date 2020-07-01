@@ -58,6 +58,7 @@ func GetRfinexTickers() {
 		market.BaseId = base.Id
 		market.QuoteId = quoteCurrency.Id
 		market.Visible = true
+		market.Source = "rfinex"
 		db.Save(&market)
 		var quote Quote
 		db.Where("source in (?)", []string{"rfinex", "local"}).FirstOrInit(&quote, map[string]interface{}{"type": "Quotes::Rfinex", "base_id": base.Id, "quote_id": quoteCurrency.Id, "market_id": market.Id})
