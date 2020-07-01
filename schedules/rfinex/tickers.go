@@ -62,6 +62,7 @@ func GetRfinexTickers() {
 		db.Save(&market)
 		var quote Quote
 		db.Where("source in (?)", []string{"rfinex", "local"}).FirstOrInit(&quote, map[string]interface{}{"type": "Quotes::Rfinex", "base_id": base.Id, "quote_id": quoteCurrency.Id, "market_id": market.Id})
+		quote.Source = "rfinex"
 		quote.Price = m.Ticker.Last
 		quote.Timestamp = m.At * 1000
 		db.Save(&quote)

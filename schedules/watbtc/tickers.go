@@ -31,7 +31,6 @@ func GetWatbtcTickers() {
 
 	var result struct {
 		Body []struct {
-			At     int64  `json:"at"`
 			Name   string `json:"name"`
 			Code   string `json:"base_unit"`
 			Quote  string `json:"usdt"`
@@ -62,8 +61,9 @@ func GetWatbtcTickers() {
 		db.Save(&market)
 		var quote Quote
 		db.Where("source in (?)", []string{"watbtc", "local"}).FirstOrInit(&quote, map[string]interface{}{"type": "Quotes::Watbtc", "base_id": base.Id, "quote_id": quoteCurrency.Id, "market_id": market.Id})
+		quote.Source = "watbtc"
 		quote.Price = m.Ticker.Last
-		quote.Timestamp = m.At * 1000
+		quote.Timestamp = time.Now().Unix() * 1000
 		db.Save(&quote)
 		createSubQuote(&quote)
 	}
