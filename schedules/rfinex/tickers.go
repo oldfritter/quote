@@ -68,6 +68,7 @@ func GetRfinexTickers() {
 		quote.Timestamp = m.At * 1000
 		quote.Source = "rfinex"
 		db.Save(&quote)
+		quote.NotifyQuote()
 		createSubQuote(&quote)
 	}
 	db.DbCommit()

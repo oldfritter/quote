@@ -44,7 +44,7 @@ func SaveDataFromRedis() {
 			m.Where("source = ?", simple.Source).Where("base_id = ?", baseC.Id).Where("quote_id = ?", quoteC.Id).Where("market_id = ?", market.Id).FirstOrInit(&quote)
 			quote.Price = simple.Price
 			quote.Timestamp = simple.Timestamp
-			m.Save(&quote)
+			m.Debug().Save(&quote)
 		}
 	}
 	m.DbCommit()

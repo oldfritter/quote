@@ -59,10 +59,9 @@ func subQuote(origin, q *Quote) (Quote, error) {
 		subQuote.QuoteId = q.QuoteId
 		// m.Save(&subQuote)
 		// m.DbCommit()
-	} else {
-		if subQuote.Timestamp > origin.Timestamp {
-			return subQuote, fmt.Errorf("Already have.")
-		}
+	}
+	if subQuote.Timestamp > origin.Timestamp {
+		return subQuote, fmt.Errorf("Already have.")
 	}
 	subQuote.QuoteCurrency = q.QuoteCurrency
 	if subQuote.Price.Equal(origin.Price.Mul(q.Price)) {
