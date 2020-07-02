@@ -20,7 +20,7 @@ func SaveDataFromRedis() {
 	defer dataRedis.Close()
 
 	for _, market := range markets {
-		keys, err := redis.Strings(dataRedis.Do("KEYS", fmt.Sprintf("Quotes:%v:*", market.Id)))
+		keys, err := redis.Strings(dataRedis.Do("KEYS", fmt.Sprintf("Quotes:%d:*", market.Id)))
 		if err != nil {
 		}
 		for _, key := range keys {
@@ -38,13 +38,13 @@ func SaveDataFromRedis() {
 			if m.Where("source = ?", simple.Source).Where("symbol = ?", simple.Base).First(&baseC).RecordNotFound() {
 				return
 			}
-			if m.Where("source = ?", simple.Source).Where("symbol = ?", simple.Quote).First(&quoteC).RecordNotFound() {
+			if m.Where("source in (?)", []string{simple.Source, "local"}).Where("symbol = ?", simple.Quote).First(&quoteC).RecordNotFound() {
 				return
 			}
 			m.Where("source = ?", simple.Source).Where("base_id = ?", baseC.Id).Where("quote_id = ?", quoteC.Id).Where("market_id = ?", market.Id).FirstOrInit(&quote)
 			quote.Price = simple.Price
 			quote.Timestamp = simple.Timestamp
-			m.Debug().Save(&quote)
+			m.Save(&quote)
 		}
 	}
 	m.DbCommit()
