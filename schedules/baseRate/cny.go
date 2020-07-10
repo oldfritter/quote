@@ -137,7 +137,7 @@ func UsdToCny() {
 	})
 	quote.Timestamp = time.Now().UnixNano() / 1000000
 	quote.Price = price
-	db.Save(&quote)
+	db.Save(&quoteT)
 	db.FirstOrInit(&cnstQuote, map[string]interface{}{
 		"base_id":  usd.Id,
 		"quote_id": cnst.Id,
@@ -155,6 +155,6 @@ func UsdToCny() {
 	})
 	cnstQuote.Timestamp = time.Now().UnixNano() / 1000000
 	cnstQuote.Price = price
-	db.Save(&cnstQuote)
+	db.Save(&cnstQuoteT)
 	db.DbCommit()
 }
