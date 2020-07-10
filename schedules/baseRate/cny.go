@@ -135,8 +135,8 @@ func UsdToCny() {
 		"source":   "local",
 		"type":     "Quotes::Local",
 	})
-	quote.Timestamp = time.Now().UnixNano() / 1000000
-	quote.Price = price
+	quoteT.Timestamp = time.Now().UnixNano() / 1000000
+	quoteT.Price = price
 	db.Save(&quoteT)
 	db.FirstOrInit(&cnstQuote, map[string]interface{}{
 		"base_id":  usd.Id,
@@ -153,8 +153,8 @@ func UsdToCny() {
 		"source":   "local",
 		"type":     "Quotes::Local",
 	})
-	cnstQuote.Timestamp = time.Now().UnixNano() / 1000000
-	cnstQuote.Price = price
+	cnstQuoteT.Timestamp = time.Now().UnixNano() / 1000000
+	cnstQuoteT.Price = price
 	db.Save(&cnstQuoteT)
 	db.DbCommit()
 }
