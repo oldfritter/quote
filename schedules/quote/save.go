@@ -11,10 +11,10 @@ import (
 )
 
 func SaveDataFromRedis() {
-	m := utils.DbBegin()
-	defer m.DbRollback()
+	db := utils.DbBegin()
+	defer db.DbRollback()
 	var markets []Market
-	m.Where("visible = ?", true).Find(&markets)
+	db.Where("visible = ?", true).Find(&markets)
 
 	dataRedis := utils.GetRedisConn("data")
 	defer dataRedis.Close()
@@ -24,6 +24,9 @@ func SaveDataFromRedis() {
 		if err != nil {
 		}
 		for _, key := range keys {
+			m := utils.DbBegin()
+			defer m.DbRollback()
+
 			qByte, err := redis.Bytes(dataRedis.Do("GET", key))
 			if err != nil {
 			}
@@ -41,11 +44,16 @@ func SaveDataFromRedis() {
 			if m.Where("source in (?)", []string{simple.Source, "local"}).Where("symbol = ?", simple.Quote).First(&quoteC).RecordNotFound() {
 				return
 			}
-			m.Where("source = ?", simple.Source).Where("base_id = ?", baseC.Id).Where("quote_id = ?", quoteC.Id).Where("market_id = ?", market.Id).FirstOrInit(&quote)
+			if m.Where("source = ?", simple.Source).Where("base_id = ?", baseC.Id).Where("quote_id = ?", quoteC.Id).Where("market_id = ?", market.Id).First(&quote).RecordNotFound() {
+				quote.Source = simple.Source
+				quote.BaseId = baseC.Id
+				quote.QuoteId = quoteC.Id
+				quote.MarketId = market.Id
+			}
 			quote.Price = simple.Price
 			quote.Timestamp = simple.Timestamp
 			m.Save(&quote)
+			m.DbCommit()
 		}
 	}
-	m.DbCommit()
 }

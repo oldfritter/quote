@@ -90,7 +90,7 @@ func UsdToCny() {
 	price, _ := decimal.NewFromString(p)
 	db := utils.DbBegin()
 	defer db.DbRollback()
-	var usd, cny, cnst Currency
+	var usd, usdt, cny, cnst Currency
 	db.FirstOrInit(&usd, map[string]interface{}{
 		"key":     "USD",
 		"symbol":  "usd",
@@ -98,6 +98,13 @@ func UsdToCny() {
 		"visible": true,
 	})
 	db.Save(&usd)
+	db.FirstOrInit(&usdt, map[string]interface{}{
+		"key":     "USDT",
+		"symbol":  "usdt",
+		"source":  "local",
+		"visible": true,
+	})
+	db.Save(&usdt)
 	db.FirstOrInit(&cny, map[string]interface{}{
 		"key":     "CNY",
 		"symbol":  "cny",
@@ -112,7 +119,7 @@ func UsdToCny() {
 		"visible": true,
 	})
 	db.Save(&cnst)
-	var quote, cnstQuote Quote
+	var quote, quoteT, cnstQuote, cnstQuoteT Quote
 	db.FirstOrInit(&quote, map[string]interface{}{
 		"base_id":  usd.Id,
 		"quote_id": cny.Id,
@@ -122,8 +129,26 @@ func UsdToCny() {
 	quote.Timestamp = time.Now().UnixNano() / 1000000
 	quote.Price = price
 	db.Save(&quote)
+	db.FirstOrInit(&quoteT, map[string]interface{}{
+		"base_id":  usdt.Id,
+		"quote_id": cny.Id,
+		"source":   "local",
+		"type":     "Quotes::Local",
+	})
+	quote.Timestamp = time.Now().UnixNano() / 1000000
+	quote.Price = price
+	db.Save(&quote)
 	db.FirstOrInit(&cnstQuote, map[string]interface{}{
 		"base_id":  usd.Id,
+		"quote_id": cnst.Id,
+		"source":   "local",
+		"type":     "Quotes::Local",
+	})
+	cnstQuote.Timestamp = time.Now().UnixNano() / 1000000
+	cnstQuote.Price = price
+	db.Save(&cnstQuote)
+	db.FirstOrInit(&cnstQuoteT, map[string]interface{}{
+		"base_id":  usdt.Id,
 		"quote_id": cnst.Id,
 		"source":   "local",
 		"type":     "Quotes::Local",
