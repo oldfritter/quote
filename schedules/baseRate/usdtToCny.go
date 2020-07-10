@@ -1,6 +1,10 @@
 package baseRate
 
 import (
+	"context"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -11,7 +15,19 @@ import (
 )
 
 func UsdtToCny() {
-	price := decimal.NewFromFloat(1)
+	url := "https://markets.money.cnn.com/common/modules/iframe/currencyConverter.asp?convert=1&amount=1&base=USD&quote=CNY"
+	ctx, cancelFun := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancelFun()
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	resp, err := http.DefaultClient.Do(req.WithContext(ctx))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	p := strings.TrimLeft(string(body), "= ")
+	p = strings.TrimRight(p, " CNY")
+	price, _ := decimal.NewFromString(p)
 	db := utils.DbBegin()
 	defer db.DbRollback()
 	var cny Currency
