@@ -77,7 +77,7 @@ func InitSchedule() {
 	c.AddFunc("0 * * * * *", baseRate.CnyToUsd)
 	c.AddFunc("0 * * * * *", baseRate.UsdToCny)
 	c.AddFunc("0 * * * * *", baseRate.UsdtToUsd)
-	c.AddFunc("0 * * * * *", baseRate.UsdtToCny)
+	c.AddFunc("0 * * * * *", baseRate.HuobiUsdtToCny)
 
 	c.AddFunc("*/30 * * * * *", rfinex.GetRfinexTickers)
 	c.AddFunc("*/30 * * * * *", watbtc.GetWatbtcTickers)
