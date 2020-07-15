@@ -96,3 +96,48 @@ func HuobiUsdtToCny() {
 	db.Save(&quote)
 	db.DbCommit()
 }
+
+func BinanceUsdtToCny() {
+	url := "https://c2c.binance.com/gateway-api/v2/public/c2c/adv/search"
+	ctx, cancelFun := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancelFun()
+	req, _ := http.NewRequest(http.MethodPost, url, strings.NewReader("{\"rows\":1,\"fiat\":\"CNY\",\"page\":1,\"asset\":\"USDT\",\"tradeType\":\"BUY\"}"))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req.WithContext(ctx))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	var result struct {
+		Data []struct {
+			AdvDetail struct {
+				Price decimal.Decimal `json:"price"`
+			} `json:"advDetail"`
+		} `json:"data"`
+	}
+	json.Unmarshal(body, &result)
+	db := utils.DbBegin()
+	defer db.DbRollback()
+	var cny Currency
+	db.FirstOrInit(&cny, map[string]interface{}{
+		"key":     "CNY",
+		"symbol":  "cny",
+		"source":  "local",
+		"visible": true,
+	})
+	db.Save(&cny)
+	var usdt Currency
+	db.Where("symbol = ?", "usdt").Where("source = ?", "binance").First(&usdt)
+	var quote Quote
+	db.FirstOrInit(&quote, map[string]interface{}{
+		"base_id":  usdt.Id,
+		"quote_id": cny.Id,
+		"type":     "Quotes::" + strings.Title(usdt.Source),
+	})
+	quote.Timestamp = time.Now().UnixNano() / 1000000
+	quote.Price = result.Data[0].AdvDetail.Price
+	quote.Source = usdt.Source
+	db.Debug().Save(&quote)
+	db.DbCommit()
+}
