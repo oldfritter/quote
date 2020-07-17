@@ -36,7 +36,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		if err != nil {
 			continue
 		}
-		if payload.Level < 1 && (sub.IsLegal() || sub.IsAnchored()) {
+		if payload.Level < 2 && (sub.IsLegal() || sub.IsAnchored()) {
 			createSubQuote(&sub, payload.Level+1)
 		}
 	}
