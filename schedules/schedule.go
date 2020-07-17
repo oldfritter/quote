@@ -83,7 +83,7 @@ func InitSchedule() {
 	c.AddFunc("*/30 * * * * *", rfinex.GetRfinexTickers)
 	c.AddFunc("*/30 * * * * *", watbtc.GetWatbtcTickers)
 
-	c.AddFunc("0 */10 * * * *", quote.SaveDataFromRedis)
+	c.AddFunc("*/30 * * * * *", quote.SaveDataFromRedis)
 
 	c.Start()
 }

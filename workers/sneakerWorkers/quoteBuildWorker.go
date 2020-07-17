@@ -27,7 +27,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		return
 	}
 	var quotes []Quote
-	if db.Where("`source` in (?)", []string{origin.Source, "local"}).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Group("quote_id").Find(&quotes).RecordNotFound() {
+	if db.Where("`source` in (?)", []string{origin.Source, "local"}).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
 		return
 	}
 	db.DbRollback()
@@ -46,10 +46,6 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 
 func subQuote(origin, q *Quote) (Quote, error) {
 	var subQuote Quote
-	// m := utils.DbBegin()
-	// defer m.DbRollback()
-	// m.Where("type = ?", origin.Type).Where("base_id = ?", origin.BaseId).Where("quote_id = ?", q.QuoteId).Where("market_id = ?", origin.MarketId).First(&subQuote)
-	// if subQuote.Id == 0 {
 	subQuote.Type = origin.Type
 	subQuote.BaseId = origin.BaseId
 	subQuote.MarketId = origin.MarketId
@@ -57,19 +53,9 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	subQuote.Timestamp = origin.Timestamp
 	subQuote.Price = origin.Price.Mul(q.Price)
 	subQuote.QuoteId = q.QuoteId
-	//   m.Save(&subQuote)
-	//   m.DbCommit()
-	//   return subQuote, nil
-	// }
-	// if subQuote.Timestamp > origin.Timestamp {
-	//   return subQuote, fmt.Errorf("Already have.")
-	// }
-	// subQuote.QuoteCurrency = q.QuoteCurrency
-	// if subQuote.Price.Equal(origin.Price.Mul(q.Price)) {
-	//   return subQuote, fmt.Errorf("Already have.")
-	// }
 	subQuote.Price = origin.Price.Mul(q.Price)
 	subQuote.Timestamp = origin.Timestamp
+	subQuote.SetAttrs()
 	subQuote.SaveToRedis()
 	subQuote.NotifyQuote()
 	return subQuote, nil
