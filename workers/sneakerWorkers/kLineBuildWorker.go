@@ -67,7 +67,7 @@ func buildKLine(worker *Worker, marketId int, period int64) {
 	if err != nil {
 		worker.LogError(err)
 	}
-	err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["k"], "#", "text/plain", &b, amqp.Table{}, amqp.Persistent)
+	err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["k"], "#", "text/plain", &b, amqp.Table{}, amqp.Transient)
 	if err != nil {
 		worker.LogError(err)
 	}

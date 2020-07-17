@@ -70,7 +70,7 @@ func Save(market *Market, k *KLine) {
 		log.Println("error:", err)
 	}
 	go func() {
-		err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["k"], "#", "text/plain", &n, amqp.Table{}, amqp.Persistent)
+		err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["k"], "#", "text/plain", &n, amqp.Table{}, amqp.Transient)
 		if err != nil {
 			log.Println("{error:", err, "}")
 		}
@@ -81,7 +81,7 @@ func Save(market *Market, k *KLine) {
 		log.Println("error:", err)
 	}
 	go func() {
-		err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["ticker"], "#", "text/plain", &t, amqp.Table{}, amqp.Persistent)
+		err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["ticker"], "#", "text/plain", &t, amqp.Table{}, amqp.Transient)
 		if err != nil {
 			log.Println("{error:", err, "}")
 		}
@@ -107,7 +107,7 @@ func buildOtherKLines(dataRedis redis.Conn, market *Market) {
 		if err != nil {
 			log.Println("error:", err)
 		}
-		err = initializers.PublishMessageWithRouteKey("quote.default", "quote.kLine.build", "text/plain", &b, amqp.Table{}, amqp.Persistent)
+		err = initializers.PublishMessageWithRouteKey("quote.default", "quote.kLine.build", "text/plain", &b, amqp.Table{}, amqp.Transient)
 		if err != nil {
 			log.Println("{error:", err, "}")
 		}
@@ -144,7 +144,7 @@ func createSubQuote(quote *Quote) {
 	if err != nil {
 		log.Println(err)
 	}
-	err = initializers.PublishMessageWithRouteKey("quote.default", "quote.sub.build", "text/plain", &b, amqp.Table{}, amqp.Persistent)
+	err = initializers.PublishMessageWithRouteKey("quote.default", "quote.sub.build", "text/plain", &b, amqp.Table{}, amqp.Transient)
 	if err != nil {
 		log.Println(err)
 	}
