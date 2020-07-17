@@ -82,18 +82,20 @@ func HuobiUsdtToCny() {
 		"visible": true,
 	})
 	db.Save(&cny)
-	var usdt Currency
-	db.Where("symbol = ?", "usdt").Where("source = (?)", []string{"huobi", "watbtc"}).First(&usdt)
-	var quote Quote
-	db.FirstOrInit(&quote, map[string]interface{}{
-		"base_id":  usdt.Id,
-		"quote_id": cny.Id,
-		"type":     "Quotes::" + strings.Title(usdt.Source),
-	})
-	quote.Timestamp = time.Now().UnixNano() / 1000000
-	quote.Price = result.Data[0].Price
-	quote.Source = usdt.Source
-	db.Save(&quote)
+	var usdts []Currency
+	db.Where("symbol = ?", "usdt").Where("source = (?)", []string{"huobi", "watbtc"}).Find(&usdts)
+	for _, usdt := range usdts {
+		var quote Quote
+		db.FirstOrInit(&quote, map[string]interface{}{
+			"base_id":  usdt.Id,
+			"quote_id": cny.Id,
+			"type":     "Quotes::" + strings.Title(usdt.Source),
+		})
+		quote.Timestamp = time.Now().UnixNano() / 1000000
+		quote.Price = result.Data[0].Price
+		quote.Source = usdt.Source
+		db.Save(&quote)
+	}
 	db.DbCommit()
 }
 
