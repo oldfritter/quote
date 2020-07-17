@@ -27,7 +27,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		return
 	}
 	var quotes []Quote
-	if db.Where("`source` in (?)", []string{origin.Source, "local"}).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Group("quote_id").Find(&quotes).RecordNotFound() {
+	if db.Where("`source` in (?)", []string{origin.Source, "local"}).Where("base_id = ?", origin.QuoteId).Where("market_id <> ?", origin.MarketId).Find(&quotes).RecordNotFound() {
 		return
 	}
 	db.DbRollback()
@@ -36,7 +36,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		if err != nil {
 			continue
 		}
-		if payload.Level < 3 && (sub.IsLegal() || sub.IsAnchored()) {
+		if payload.Level < 1 && (sub.IsLegal() || sub.IsAnchored()) {
 			createSubQuote(&sub, payload.Level+1)
 		}
 	}
@@ -48,7 +48,7 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	var subQuote Quote
 	m := utils.DbBegin()
 	defer m.DbRollback()
-	m.Where("type = ?", origin.Type).Where("base_id = ?", origin.BaseId).Where("quote_id = ?", q.QuoteId).Where("market_id = ?", origin.MarketId).Where("source = ?", origin.Source).First(&subQuote)
+	m.Where("type = ?", origin.Type).Where("base_id = ?", origin.BaseId).Where("quote_id = ?", q.QuoteId).Where("market_id = ?", origin.MarketId).First(&subQuote)
 	if subQuote.Id == 0 {
 		subQuote.Type = origin.Type
 		subQuote.BaseId = origin.BaseId
