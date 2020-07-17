@@ -83,7 +83,7 @@ func HuobiUsdtToCny() {
 	})
 	db.Save(&cny)
 	var usdts []Currency
-	db.Where("symbol = ?", "usdt").Where("source = (?)", []string{"huobi", "watbtc"}).Find(&usdts)
+	db.Where("symbol = ?", "usdt").Where("source in (?)", []string{"huobi", "watbtc"}).Find(&usdts)
 	for _, usdt := range usdts {
 		var quote Quote
 		db.FirstOrInit(&quote, map[string]interface{}{
