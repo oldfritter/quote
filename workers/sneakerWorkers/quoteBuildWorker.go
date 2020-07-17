@@ -2,7 +2,7 @@ package sneakerWorkers
 
 import (
 	"encoding/json"
-	"fmt"
+	// "fmt"
 	"log"
 	"time"
 
@@ -36,7 +36,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 		if err != nil {
 			continue
 		}
-		if payload.Level < 1 && (sub.IsLegal() || sub.IsAnchored()) {
+		if payload.Level < 3 && (sub.IsLegal() || sub.IsAnchored()) {
 			createSubQuote(&sub, payload.Level+1)
 		}
 	}
@@ -46,28 +46,28 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 
 func subQuote(origin, q *Quote) (Quote, error) {
 	var subQuote Quote
-	m := utils.DbBegin()
-	defer m.DbRollback()
-	m.Where("type = ?", origin.Type).Where("base_id = ?", origin.BaseId).Where("quote_id = ?", q.QuoteId).Where("market_id = ?", origin.MarketId).First(&subQuote)
-	if subQuote.Id == 0 {
-		subQuote.Type = origin.Type
-		subQuote.BaseId = origin.BaseId
-		subQuote.MarketId = origin.MarketId
-		subQuote.Source = origin.Source
-		subQuote.Timestamp = origin.Timestamp
-		subQuote.Price = origin.Price.Mul(q.Price)
-		subQuote.QuoteId = q.QuoteId
-		m.Save(&subQuote)
-		m.DbCommit()
-		return subQuote, nil
-	}
-	if subQuote.Timestamp > origin.Timestamp {
-		return subQuote, fmt.Errorf("Already have.")
-	}
-	subQuote.QuoteCurrency = q.QuoteCurrency
-	if subQuote.Price.Equal(origin.Price.Mul(q.Price)) {
-		return subQuote, fmt.Errorf("Already have.")
-	}
+	// m := utils.DbBegin()
+	// defer m.DbRollback()
+	// m.Where("type = ?", origin.Type).Where("base_id = ?", origin.BaseId).Where("quote_id = ?", q.QuoteId).Where("market_id = ?", origin.MarketId).First(&subQuote)
+	// if subQuote.Id == 0 {
+	subQuote.Type = origin.Type
+	subQuote.BaseId = origin.BaseId
+	subQuote.MarketId = origin.MarketId
+	subQuote.Source = origin.Source
+	subQuote.Timestamp = origin.Timestamp
+	subQuote.Price = origin.Price.Mul(q.Price)
+	subQuote.QuoteId = q.QuoteId
+	//   m.Save(&subQuote)
+	//   m.DbCommit()
+	//   return subQuote, nil
+	// }
+	// if subQuote.Timestamp > origin.Timestamp {
+	//   return subQuote, fmt.Errorf("Already have.")
+	// }
+	// subQuote.QuoteCurrency = q.QuoteCurrency
+	// if subQuote.Price.Equal(origin.Price.Mul(q.Price)) {
+	//   return subQuote, fmt.Errorf("Already have.")
+	// }
 	subQuote.Price = origin.Price.Mul(q.Price)
 	subQuote.Timestamp = origin.Timestamp
 	subQuote.SaveToRedis()
