@@ -37,7 +37,7 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 			continue
 		}
 		if payload.Level < 3 && (sub.IsLegal() || sub.IsAnchored()) {
-			createSubQuote(&sub, payload.Level+1)
+			createSubQuote(&sub, payload.Level)
 		}
 	}
 	worker.LogInfo(" payload: ", payload, ", time:", (time.Now().UnixNano()-start)/1000000, " ms")
@@ -50,8 +50,6 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	subQuote.BaseId = origin.BaseId
 	subQuote.MarketId = origin.MarketId
 	subQuote.Source = origin.Source
-	subQuote.Timestamp = origin.Timestamp
-	subQuote.Price = origin.Price.Mul(q.Price)
 	subQuote.QuoteId = q.QuoteId
 	subQuote.Price = origin.Price.Mul(q.Price)
 	subQuote.Timestamp = origin.Timestamp
@@ -67,7 +65,7 @@ func createSubQuote(quote *Quote, level int) {
 		Level int `json:"level"`
 	}{
 		Id:    quote.Id,
-		Level: level,
+		Level: level + 1,
 	})
 	if err != nil {
 		log.Println(err)

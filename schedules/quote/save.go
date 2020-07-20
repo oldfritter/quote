@@ -11,8 +11,7 @@ import (
 )
 
 func SaveDataFromRedis() {
-	db := utils.DbBegin()
-	defer db.DbRollback()
+	db := utils.Db
 	var markets []Market
 	db.Where("visible = ?", true).Find(&markets)
 
@@ -24,8 +23,6 @@ func SaveDataFromRedis() {
 		if err != nil {
 		}
 		for _, key := range keys {
-			m := utils.DbBegin()
-			defer m.DbRollback()
 
 			qByte, err := redis.Bytes(dataRedis.Do("GET", key))
 			if err != nil {
@@ -33,27 +30,32 @@ func SaveDataFromRedis() {
 			var quote Quote
 			var market Market
 			var simple SimpleQuote
-			var baseC, quoteC Currency
+			var baseC Currency
+			var quoteCs []Currency
 			json.Unmarshal(qByte, &simple)
-			if m.Where("source = ?", simple.Source).Where("symbol = ?", simple.Market).First(&market).RecordNotFound() {
+			if db.Where("source = ?", simple.Source).Where("symbol = ?", simple.Market).First(&market).RecordNotFound() {
 				return
 			}
-			if m.Where("source = ?", simple.Source).Where("symbol = ?", simple.Base).First(&baseC).RecordNotFound() {
+			if db.Where("source = ?", simple.Source).Where("symbol = ?", simple.Base).First(&baseC).RecordNotFound() {
 				return
 			}
-			if m.Where("source in (?)", []string{simple.Source, "local"}).Where("symbol = ?", simple.Quote).First(&quoteC).RecordNotFound() {
+			if db.Where("source in (?)", []string{simple.Source, "local"}).Where("symbol = ?", simple.Quote).Find(&quoteCs).RecordNotFound() {
 				return
 			}
-			if m.Where("source = ?", simple.Source).Where("base_id = ?", baseC.Id).Where("quote_id = ?", quoteC.Id).Where("market_id = ?", market.Id).First(&quote).RecordNotFound() {
-				quote.Source = simple.Source
-				quote.BaseId = baseC.Id
-				quote.QuoteId = quoteC.Id
-				quote.MarketId = market.Id
+			for _, quoteC := range quoteCs {
+				m := utils.DbBegin()
+				defer m.DbRollback()
+				if m.Where("source = ?", simple.Source).Where("base_id = ?", baseC.Id).Where("quote_id = ?", quoteC.Id).Where("market_id = ?", market.Id).First(&quote).RecordNotFound() {
+					quote.Source = simple.Source
+					quote.BaseId = baseC.Id
+					quote.QuoteId = quoteC.Id
+					quote.MarketId = market.Id
+				}
+				quote.Price = simple.Price
+				quote.Timestamp = simple.Timestamp
+				m.Save(&quote)
+				m.DbCommit()
 			}
-			quote.Price = simple.Price
-			quote.Timestamp = simple.Timestamp
-			m.Save(&quote)
-			m.DbCommit()
 		}
 	}
 }
