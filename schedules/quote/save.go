@@ -34,13 +34,13 @@ func SaveDataFromRedis() {
 			var quoteCs []Currency
 			json.Unmarshal(qByte, &simple)
 			if db.Where("source = ?", simple.Source).Where("symbol = ?", simple.Market).First(&market).RecordNotFound() {
-				break
+				continue
 			}
 			if db.Where("source = ?", simple.Source).Where("symbol = ?", simple.Base).First(&baseC).RecordNotFound() {
-				break
+				continue
 			}
 			if db.Where("source in (?)", []string{simple.Source, "local"}).Where("symbol = ?", simple.Quote).Find(&quoteCs).RecordNotFound() {
-				break
+				continue
 			}
 			for _, quoteC := range quoteCs {
 				m := utils.DbBegin()
