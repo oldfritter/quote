@@ -76,7 +76,11 @@ func GetWatbtcTickers() {
 }
 
 func createSubQuote(quote *Quote) {
-	b, err := json.Marshal(map[string]int{"id": quote.Id})
+	payload := struct {
+		Id int `json:"id"`
+	}{Id: quote.Id}
+
+	b, err := json.Marshal(payload)
 	if err != nil {
 		log.Println(err)
 	}
