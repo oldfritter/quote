@@ -140,6 +140,6 @@ func BinanceUsdtToCny() {
 	quote.Timestamp = time.Now().UnixNano() / 1000000
 	quote.Price = result.Data[0].AdvDetail.Price
 	quote.Source = usdt.Source
-	db.Debug().Save(&quote)
+	db.Save(&quote)
 	db.DbCommit()
 }

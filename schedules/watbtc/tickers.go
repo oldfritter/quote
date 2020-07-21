@@ -66,8 +66,9 @@ func GetWatbtcTickers() {
 		quote.Price = m.Ticker.Last
 		quote.Timestamp = time.Now().Unix() * 1000
 		quote.Source = "watbtc"
+		quote.Type = "Quotes::Watbtc"
 		quote.SetAttrs()
-		db.Save(&quote)
+		db.Debug().Save(&quote)
 		quote.NotifyQuote()
 		createSubQuote(&quote)
 	}
