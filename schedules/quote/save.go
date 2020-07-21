@@ -3,6 +3,7 @@ package quote
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/gomodule/redigo/redis"
 
@@ -27,7 +28,6 @@ func SaveDataFromRedis() {
 			qByte, err := redis.Bytes(dataRedis.Do("GET", key))
 			if err != nil {
 			}
-			var quote Quote
 			var market Market
 			var simple SimpleQuote
 			var baseC Currency
@@ -45,7 +45,9 @@ func SaveDataFromRedis() {
 			for _, quoteC := range quoteCs {
 				m := utils.DbBegin()
 				defer m.DbRollback()
+				var quote Quote
 				if m.Where("source = ?", simple.Source).Where("base_id = ?", baseC.Id).Where("quote_id = ?", quoteC.Id).Where("market_id = ?", market.Id).First(&quote).RecordNotFound() {
+					quote.Type = "Quotes::" + strings.Title(simple.Source)
 					quote.Source = simple.Source
 					quote.BaseId = baseC.Id
 					quote.QuoteId = quoteC.Id
