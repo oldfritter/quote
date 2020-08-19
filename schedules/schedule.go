@@ -13,7 +13,6 @@ import (
 	envConfig "quote/config"
 	"quote/initializers"
 	"quote/models"
-	"quote/schedules/backup/tasks"
 	"quote/schedules/baseRate"
 	"quote/schedules/quote"
 	"quote/schedules/rfinex"
@@ -61,11 +60,6 @@ func closeResource() {
 
 func InitSchedule() {
 	c := cron.New(cron.WithSeconds())
-
-	// 日志备份
-	c.AddFunc("0 55 23 * * *", tasks.BackupLogFiles)
-	c.AddFunc("0 56 23 * * *", tasks.UploadLogFileToS3)
-	c.AddFunc("0 59 23 * * *", tasks.CleanLogs)
 
 	// 清理过期价格
 	c.AddFunc("0 59 23 * * *", sourceData.CleanMarketExpiredKLine)
