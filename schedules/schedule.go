@@ -21,7 +21,6 @@ import (
 	"quote/sourceData/binance"
 	"quote/sourceData/huobi"
 	"quote/utils"
-	"quote/workers/sneakerWorkers"
 )
 
 func main() {
@@ -49,7 +48,7 @@ func initialize() {
 	initializers.LoadCacheData()
 	InitSchedule()
 
-	sneakerWorkers.InitWorkers()
+	initializers.InitWorkers()
 }
 
 func closeResource() {

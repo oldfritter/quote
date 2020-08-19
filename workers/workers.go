@@ -8,18 +8,16 @@ import (
 	"strconv"
 	"time"
 
-	sneaker "github.com/oldfritter/sneaker-go"
-	"github.com/streadway/amqp"
+	sneaker "github.com/oldfritter/sneaker-go/v3"
 
 	envConfig "quote/config"
 	"quote/initializers"
 	"quote/utils"
-	"quote/workers/sneakerWorkers"
 )
 
 func main() {
 	initialize()
-	sneakerWorkers.InitWorkers()
+	initializers.InitWorkers()
 
 	StartAllWorkers()
 
@@ -54,10 +52,11 @@ func closeResource() {
 }
 
 func StartAllWorkers() {
-	for _, w := range sneakerWorkers.AllWorkers {
+	for _, w := range envConfig.AllWorkerIs {
 		for i := 0; i < w.GetThreads(); i++ {
-			go func(w sneakerWorkers.Worker) {
-				sneaker.SubscribeMessageByQueue(initializers.RabbitMqConnect.Connection, w, amqp.Table{})
+			go func(w sneaker.WorkerI) {
+				w.InitLogger()
+				sneaker.SubscribeMessageByQueue(envConfig.RabbitMqConnect.Connection, w, nil)
 			}(w)
 		}
 	}

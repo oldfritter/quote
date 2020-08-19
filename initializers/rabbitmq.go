@@ -7,26 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/oldfritter/sneaker-go/utils"
+	"github.com/oldfritter/sneaker-go/v3"
 	"github.com/streadway/amqp"
 	"gopkg.in/yaml.v2"
-)
 
-type Amqp struct {
-	Connect struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-		Vhost    string `yaml:"vhost"`
-	} `yaml:"connect"`
-
-	Exchange map[string]map[string]string `yaml:"exchange"`
-}
-
-var (
-	AmqpGlobalConfig Amqp
-	RabbitMqConnect  utils.RabbitMqConnect
+	"quote/config"
 )
 
 func InitializeAmqpConfig() {
@@ -36,7 +21,7 @@ func InitializeAmqpConfig() {
 		log.Fatal(err)
 		return
 	}
-	err = yaml.Unmarshal(content, &AmqpGlobalConfig)
+	err = yaml.Unmarshal(content, &config.AmqpGlobalConfig)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -46,29 +31,29 @@ func InitializeAmqpConfig() {
 
 func InitializeAmqpConnection() {
 	var err error
-	conn, err := amqp.Dial("amqp://" + AmqpGlobalConfig.Connect.Username + ":" + AmqpGlobalConfig.Connect.Password + "@" + AmqpGlobalConfig.Connect.Host + ":" + AmqpGlobalConfig.Connect.Port + "/" + AmqpGlobalConfig.Connect.Vhost)
-	RabbitMqConnect = utils.RabbitMqConnect{conn}
+	conn, err := amqp.Dial("amqp://" + config.AmqpGlobalConfig.Connect.Username + ":" + config.AmqpGlobalConfig.Connect.Password + "@" + config.AmqpGlobalConfig.Connect.Host + ":" + config.AmqpGlobalConfig.Connect.Port + "/" + config.AmqpGlobalConfig.Connect.Vhost)
+	config.RabbitMqConnect = sneaker.RabbitMqConnect{conn}
 	if err != nil {
 		time.Sleep(5000)
 		InitializeAmqpConnection()
 		return
 	}
 	go func() {
-		<-RabbitMqConnect.NotifyClose(make(chan *amqp.Error))
+		<-config.RabbitMqConnect.NotifyClose(make(chan *amqp.Error))
 		InitializeAmqpConnection()
 	}()
 }
 
 func CloseAmqpConnection() {
-	RabbitMqConnect.Close()
+	config.RabbitMqConnect.Close()
 }
 
-func GetRabbitMqConnect() utils.RabbitMqConnect {
-	return RabbitMqConnect
+func GetRabbitMqConnect() sneaker.RabbitMqConnect {
+	return config.RabbitMqConnect
 }
 
 func PublishMessageWithRouteKey(exchange, routeKey, contentType string, message *[]byte, arguments amqp.Table, deliveryMode uint8) error {
-	channel, err := RabbitMqConnect.Channel()
+	channel, err := config.RabbitMqConnect.Channel()
 	defer channel.Close()
 	if err != nil {
 		return fmt.Errorf("Channel: %s", err)
@@ -94,7 +79,7 @@ func PublishMessageWithRouteKey(exchange, routeKey, contentType string, message 
 }
 
 func PublishMessageToQueue(queue, contentType string, message *[]byte, arguments amqp.Table, deliveryMode uint8) error {
-	channel, err := RabbitMqConnect.Channel()
+	channel, err := config.RabbitMqConnect.Channel()
 	defer channel.Close()
 	if err != nil {
 		return fmt.Errorf("Channel: %s", err)

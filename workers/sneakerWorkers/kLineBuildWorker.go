@@ -5,25 +5,39 @@ import (
 	"time"
 
 	"github.com/gomodule/redigo/redis"
+	sneaker "github.com/oldfritter/sneaker-go/v3"
 	"github.com/streadway/amqp"
 
-	"quote/initializers"
+	"quote/config"
 	. "quote/models"
 	"quote/utils"
 )
 
-func (worker Worker) KLineBuildWorker(payloadJson *[]byte) (err error) {
+func InitializeKLineBuildWorker() {
+	for _, w := range config.AllWorkers {
+		if w.Name == "KLineBuildWorker" {
+			config.AllWorkerIs = append(config.AllWorkerIs, &KLineBuildWorker{w})
+			return
+		}
+	}
+}
+
+type KLineBuildWorker struct {
+	sneaker.Worker
+}
+
+func (worker *KLineBuildWorker) Work(payloadJson *[]byte) (err error) {
 	worker.LogInfo(string(*payloadJson))
 	var payload struct {
 		MarketId int   `json:"market_id"`
 		Period   int64 `json:"period"`
 	}
 	json.Unmarshal([]byte(*payloadJson), &payload)
-	buildKLine(&worker, payload.MarketId, payload.Period)
+	worker.buildKLine(payload.MarketId, payload.Period)
 	return
 }
 
-func buildKLine(worker *Worker, marketId int, period int64) {
+func (worker *KLineBuildWorker) buildKLine(marketId int, period int64) {
 	dataRedis := utils.GetRedisConn("data")
 	defer dataRedis.Close()
 	market, err := FindMarketById(marketId)
@@ -67,7 +81,7 @@ func buildKLine(worker *Worker, marketId int, period int64) {
 	if err != nil {
 		worker.LogError(err)
 	}
-	err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["k"], "#", "text/plain", &b, amqp.Table{}, amqp.Transient)
+	err = config.RabbitMqConnect.PublishMessageWithRouteKey(config.AmqpGlobalConfig.Exchange["fanout"]["k"], "#", "text/plain", false, false, &b, amqp.Table{}, amqp.Transient, "")
 	if err != nil {
 		worker.LogError(err)
 	}

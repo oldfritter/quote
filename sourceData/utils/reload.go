@@ -4,21 +4,22 @@ import (
 	"encoding/json"
 	"log"
 
+	"quote/config"
 	"quote/initializers"
 )
 
 func ListenReloadMarkets(reloadChan chan error) {
-	channel, err := initializers.RabbitMqConnect.Channel()
+	channel, err := config.RabbitMqConnect.Channel()
 	if err != nil {
 		log.Println(err)
 	}
-	channel.ExchangeDeclare(initializers.AmqpGlobalConfig.Exchange["fanout"]["default"], "fanout", true, false, false, false, nil)
+	channel.ExchangeDeclare(config.AmqpGlobalConfig.Exchange["fanout"]["default"], "fanout", true, false, false, false, nil)
 	queue, err := channel.QueueDeclare("", true, true, false, false, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	channel.QueueBind(queue.Name, queue.Name, initializers.AmqpGlobalConfig.Exchange["fanout"]["default"], false, nil)
+	channel.QueueBind(queue.Name, queue.Name, config.AmqpGlobalConfig.Exchange["fanout"]["default"], false, nil)
 	msgs, _ := channel.Consume(queue.Name, "", true, false, false, false, nil)
 	for d := range msgs {
 		var payload initializers.Payload

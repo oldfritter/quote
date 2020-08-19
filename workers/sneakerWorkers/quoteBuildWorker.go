@@ -2,18 +2,32 @@ package sneakerWorkers
 
 import (
 	"encoding/json"
-	// "fmt"
 	"log"
 	"time"
 
+	// "github.com/gomodule/redigo/redis"
+	sneaker "github.com/oldfritter/sneaker-go/v3"
 	"github.com/streadway/amqp"
 
-	"quote/initializers"
+	"quote/config"
 	. "quote/models"
 	"quote/utils"
 )
 
-func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
+func InitializeSubQuoteBuildWorker() {
+	for _, w := range config.AllWorkers {
+		if w.Name == "SubQuoteBuildWorker" {
+			config.AllWorkerIs = append(config.AllWorkerIs, &SubQuoteBuildWorker{w})
+			return
+		}
+	}
+}
+
+type SubQuoteBuildWorker struct {
+	sneaker.Worker
+}
+
+func (worker *SubQuoteBuildWorker) Work(payloadJson *[]byte) (err error) {
 	start := time.Now().UnixNano()
 	var payload struct {
 		Id    int `json:"id"`
@@ -32,19 +46,21 @@ func (worker Worker) SubQuoteBuildWorker(payloadJson *[]byte) (err error) {
 	}
 	db.DbRollback()
 	for _, q := range quotes {
-		sub, err := subQuote(&origin, &q)
+		sub, err := worker.subQuote(&origin, &q)
 		if err != nil {
 			continue
 		}
 		if payload.Level < 3 && (sub.IsLegal() || sub.IsAnchored()) {
-			createSubQuote(&sub, payload.Level)
+			worker.createSubQuote(&sub, payload.Level)
 		}
 	}
 	worker.LogInfo(" payload: ", payload, ", time:", (time.Now().UnixNano()-start)/1000000, " ms")
 	return
 }
 
-func subQuote(origin, q *Quote) (Quote, error) {
+func (worker *SubQuoteBuildWorker) subQuote(origin, q *Quote) (Quote, error) {
+	db := utils.DbBegin()
+	defer db.DbRollback()
 	var subQuote Quote
 	subQuote.Type = origin.Type
 	subQuote.BaseId = origin.BaseId
@@ -54,12 +70,14 @@ func subQuote(origin, q *Quote) (Quote, error) {
 	subQuote.Price = origin.Price.Mul(q.Price)
 	subQuote.Timestamp = origin.Timestamp
 	subQuote.SetAttrs()
+	db.Save(&subQuote)
+	db.DbCommit()
 	subQuote.SaveToRedis()
 	subQuote.NotifyQuote()
 	return subQuote, nil
 }
 
-func createSubQuote(quote *Quote, level int) {
+func (worker *SubQuoteBuildWorker) createSubQuote(quote *Quote, level int) {
 	b, err := json.Marshal(struct {
 		Id    int `json:"id"`
 		Level int `json:"level"`
@@ -70,7 +88,7 @@ func createSubQuote(quote *Quote, level int) {
 	if err != nil {
 		log.Println(err)
 	}
-	err = initializers.PublishMessageWithRouteKey("quote.default", "quote.sub.build", "text/plain", &b, amqp.Table{}, amqp.Transient)
+	err = config.RabbitMqConnect.PublishMessageWithRouteKey("quote.default", "quote.sub.build", "text/plain", false, false, &b, amqp.Table{}, amqp.Transient, "")
 	if err != nil {
 		log.Println(err)
 	}

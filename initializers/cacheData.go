@@ -6,6 +6,7 @@ import (
 	"log"
 	"reflect"
 
+	"quote/config"
 	. "quote/models"
 	"quote/utils"
 )
@@ -26,17 +27,17 @@ func InitCacheData() {
 func LoadCacheData() {
 	InitCacheData()
 	go func() {
-		channel, err := RabbitMqConnect.Channel()
+		channel, err := config.RabbitMqConnect.Channel()
 		if err != nil {
 			fmt.Errorf("Channel: %s", err)
 		}
-		channel.ExchangeDeclare(AmqpGlobalConfig.Exchange["fanout"]["default"], "fanout", true, false, false, false, nil)
+		channel.ExchangeDeclare(config.AmqpGlobalConfig.Exchange["fanout"]["default"], "fanout", true, false, false, false, nil)
 		queue, err := channel.QueueDeclare("", true, true, false, false, nil)
 		if err != nil {
 			return
 		}
 		QueueName = queue.Name
-		channel.QueueBind(queue.Name, QueueName, AmqpGlobalConfig.Exchange["fanout"]["default"], false, nil)
+		channel.QueueBind(queue.Name, QueueName, config.AmqpGlobalConfig.Exchange["fanout"]["default"], false, nil)
 		msgs, _ := channel.Consume(queue.Name, "", true, false, false, false, nil)
 		for d := range msgs {
 			var payload Payload

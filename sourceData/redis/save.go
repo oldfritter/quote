@@ -9,6 +9,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/streadway/amqp"
 
+	"quote/config"
 	"quote/initializers"
 	. "quote/models"
 	"quote/utils"
@@ -70,7 +71,7 @@ func Save(market *Market, k *KLine) {
 		log.Println("error:", err)
 	}
 	go func() {
-		err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["k"], "#", "text/plain", &n, amqp.Table{}, amqp.Transient)
+		err = config.RabbitMqConnect.PublishMessageWithRouteKey(config.AmqpGlobalConfig.Exchange["fanout"]["k"], "#", "text/plain", false, false, &n, amqp.Table{}, amqp.Transient, "")
 		if err != nil {
 			log.Println("{error:", err, "}")
 		}
@@ -81,7 +82,7 @@ func Save(market *Market, k *KLine) {
 		log.Println("error:", err)
 	}
 	go func() {
-		err = initializers.PublishMessageWithRouteKey(initializers.AmqpGlobalConfig.Exchange["fanout"]["ticker"], "#", "text/plain", &t, amqp.Table{}, amqp.Transient)
+		err = config.RabbitMqConnect.PublishMessageWithRouteKey(config.AmqpGlobalConfig.Exchange["fanout"]["ticker"], "#", "text/plain", false, false, &t, amqp.Table{}, amqp.Transient, "")
 		if err != nil {
 			log.Println("{error:", err, "}")
 		}
@@ -107,7 +108,7 @@ func buildOtherKLines(dataRedis redis.Conn, market *Market) {
 		if err != nil {
 			log.Println("error:", err)
 		}
-		err = initializers.PublishMessageWithRouteKey("quote.default", "quote.kLine.build", "text/plain", &b, amqp.Table{}, amqp.Transient)
+		err = config.RabbitMqConnect.PublishMessageWithRouteKey("quote.default", "quote.kLine.build", "text/plain", false, false, &b, amqp.Table{}, amqp.Transient, "")
 		if err != nil {
 			log.Println("{error:", err, "}")
 		}
